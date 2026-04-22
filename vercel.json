@@ -1,7 +1,4 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "pnpm build",
-  "installCommand": "pnpm install",
   "crons": [
     { "path": "/api/cron/sla",           "schedule": "*/5 * * * *"   },
     { "path": "/api/cron/overdue",       "schedule": "*/15 * * * *"  },
