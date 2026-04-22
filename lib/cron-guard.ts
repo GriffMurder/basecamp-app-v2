@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Returns true if the request carries a valid CRON_SECRET bearer token.
  * Returns false if missing or invalid.
  */
