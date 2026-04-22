@@ -1,0 +1,13 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install",
+  "crons": [
+    { "path": "/api/cron/sla",           "schedule": "*/5 * * * *"   },
+    { "path": "/api/cron/overdue",       "schedule": "*/15 * * * *"  },
+    { "path": "/api/cron/daily-ops",     "schedule": "5 8 * * 1-5"   },
+    { "path": "/api/cron/daily-scoring", "schedule": "7 8 * * 1-5"   },
+    { "path": "/api/cron/sync-people",   "schedule": "0 2 * * *"     },
+    { "path": "/api/cron/weekly-ops",    "schedule": "20 9 * * 1"    }
+  ]
+}

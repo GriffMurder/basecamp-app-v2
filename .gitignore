@@ -1,0 +1,29 @@
+# deps
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+build/
+
+# Prisma
+prisma/generated/
+
+# env files
+.env
+.env.local
+.env.*.local
+.env.production
+
+# tsbuildinfo
+*.tsbuildinfo
+
+# migration artifacts
+migration-data.sql
+
+# misc
+.DS_Store
+*.pem
+.vercel

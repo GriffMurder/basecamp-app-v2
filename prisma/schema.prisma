@@ -1,0 +1,1071 @@
+// Basecamp App -- Prisma Schema
+// Migrated from Python/SQLAlchemy app/models.py (60 models)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ── Auth.js v5 ───────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  @@map("auth_users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+  @@map("auth_accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("auth_sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+  @@map("auth_verification_tokens")
+}
+
+// ── Multi-tenant ─────────────────────────────────────────────────────────────
+
+model Organization {
+  id         Int      @id @default(autoincrement())
+  slug       String   @unique
+  name       String
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+  @@map("organizations")
+}
+
+model OrganizationSettings {
+  org_id        Int      @id
+  settings_json Json     @default("{}")
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now()) @updatedAt
+  @@map("organization_settings")
+}
+
+model DashboardUser {
+  id                  Int       @id @default(autoincrement())
+  auth_user_id        String?   @unique
+  email               String    @unique
+  display_name        String    @default("")
+  name                String?
+  password_hash       String?
+  role                String    @default("pending")
+  availability_status String    @default("available")
+  away_note           String?
+  manager_id          Int?
+  approved_by         Int?
+  approved_at         DateTime?
+  last_login_at       DateTime?
+  active              Boolean   @default(true)
+  org_id              Int?
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @default(now()) @updatedAt
+  @@map("dashboard_users")
+}
+
+// ── People / Roles ───────────────────────────────────────────────────────────
+
+model Person {
+  id                  Int       @id @default(autoincrement())
+  slack_user_id       String?   @unique
+  basecamp_person_id  String?   @unique
+  display_name        String    @default("")
+  email               String?   @unique
+  role                String
+  active              Boolean   @default(true)
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @default(now()) @updatedAt
+  @@map("people")
+}
+
+model Customer {
+  id                      Int       @id @default(autoincrement())
+  name                    String
+  basecamp_project_id     String?   @unique
+  clockify_client_id      String?   @unique
+  slack_channel_id        String?
+  external_id             String?   @unique
+  active                  Boolean   @default(true)
+  client_health_score     Int?
+  client_difficulty_index Int?
+  last_scored_at          DateTime?
+  auto_tier               String?
+  manual_tier             String?
+  effective_tier          String?
+  tier_computed_at        DateTime?
+  bucket_balance          Decimal?  @db.Decimal(10, 2)
+  bucket_last_added_at    DateTime?
+  created_at              DateTime  @default(now())
+  updated_at              DateTime  @default(now()) @updatedAt
+  @@map("customers")
+}
+
+model Va {
+  id                  Int       @id @default(autoincrement())
+  slack_user_id       String?   @unique
+  basecamp_person_id  String?   @unique
+  clockify_user_id    String?   @unique
+  display_name        String    @default("")
+  email               String?   @unique
+  active              Boolean   @default(true)
+  reliability_score   Int?
+  capacity_index      Int?
+  last_scored_at      DateTime?
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @default(now()) @updatedAt
+  @@map("vas")
+}
+
+model Manager {
+  id                          Int       @id @default(autoincrement())
+  slack_user_id               String    @unique
+  basecamp_person_id          String?   @unique
+  display_name                String    @default("")
+  email                       String?   @unique
+  active                      Boolean   @default(true)
+  default_manual_tier         String?
+  default_manual_tier_set_by  String?
+  default_manual_tier_set_at  DateTime?
+  accountability_score        Int?
+  last_scored_at              DateTime?
+  created_at                  DateTime  @default(now())
+  updated_at                  DateTime  @default(now()) @updatedAt
+  @@map("managers")
+}
+
+model AccountManager {
+  id            Int      @id @default(autoincrement())
+  slack_user_id String   @unique
+  created_at    DateTime @default(now())
+  created_by    String?
+  @@map("account_managers")
+}
+
+model PeopleMap {
+  id                      Int      @id @default(autoincrement())
+  basecamp_person_id      String?  @unique
+  basecamp_person_name    String?
+  basecamp_person_type    String?
+  slack_user_id           String
+  role                    String
+  is_client               Boolean?
+  is_internal             Boolean  @default(false)
+  @@map("people_map")
+}
+
+// ── Assignments ──────────────────────────────────────────────────────────────
+
+model CustomerAssignment {
+  id                          Int       @id @default(autoincrement())
+  customer_id                 Int
+  manager_id                  Int
+  is_primary                  Boolean   @default(true)
+  active                      Boolean   @default(true)
+  assigned_at                 DateTime  @default(now())
+  unassigned_at               DateTime?
+  assigned_by_slack_user_id   String?
+  @@unique([customer_id, manager_id], name: "customer_assignments_unique")
+  @@index([customer_id])
+  @@index([manager_id])
+  @@map("customer_assignments")
+}
+
+model TaskOwnership {
+  id                  Int       @id @default(autoincrement())
+  todo_id             String
+  bucket_id           String
+  customer_id         Int
+  responsible_va_id   Int
+  contributor_va_ids  Json?
+  active              Boolean   @default(true)
+  assigned_at         DateTime  @default(now())
+  unassigned_at       DateTime?
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @default(now()) @updatedAt
+  @@unique([todo_id, bucket_id], name: "task_ownership_todo_bucket_unique")
+  @@index([customer_id])
+  @@index([responsible_va_id])
+  @@map("task_ownership")
+}
+
+model AssignmentSlackOverride {
+  id                          Int      @id @default(autoincrement())
+  basecamp_todo_id            String
+  basecamp_person_id          String
+  slack_user_id               String
+  created_by_slack_user_id    String?
+  created_at                  DateTime @default(now())
+  expires_at                  DateTime
+  @@unique([basecamp_todo_id, basecamp_person_id], name: "assignment_slack_overrides_unique")
+  @@index([basecamp_todo_id])
+  @@index([basecamp_person_id])
+  @@map("assignment_slack_overrides")
+}
+
+model AssignmentOverride {
+  id                               BigInt   @id @default(autoincrement())
+  todo_id                          String
+  bucket_id                        String?
+  recommended_va_slack_user_id     String?
+  override_va_slack_user_id        String
+  overriding_manager_slack_user_id String?
+  override_reason                  String?
+  risk_level                       String
+  warn_flags                       Json     @default("{}")
+  created_at                       DateTime @default(now())
+  @@index([todo_id])
+  @@map("assignment_overrides")
+}
+
+// ── Legacy (Project / Message / Task / TaskClaim) ────────────────────────────
+
+model Project {
+  id                          Int       @id @default(autoincrement())
+  basecamp_project_id         String?   @unique
+  account_manager_slack_id    String?
+  active                      Boolean   @default(true)
+  last_seen_activity_at       DateTime?
+  @@map("projects")
+}
+
+model Message {
+  id                    Int       @id @default(autoincrement())
+  basecamp_message_id   String?   @unique
+  project_id            Int?
+  author_role           String?
+  raw_text              String?
+  stripped_text         String?
+  classification        String?
+  summary               String?
+  skills                Json?
+  created_at            DateTime  @default(now())
+  @@index([project_id])
+  @@map("messages")
+}
+
+model Task {
+  id                     Int       @id @default(autoincrement())
+  source                 String?
+  source_id              Int?
+  project_id             Int?
+  slack_message_ts       String?
+  assignee_slack_id      String?
+  status                 String    @default("OPEN")
+  created_at             DateTime  @default(now())
+  due_at                 DateTime?
+  assigned_at            DateTime?
+  check_ins_required     Boolean   @default(false)
+  last_check_in_at       DateTime?
+  next_check_in_at       DateTime?
+  check_ins_remaining    Int       @default(0)
+  @@index([project_id])
+  @@index([slack_message_ts])
+  @@map("tasks")
+}
+
+model TaskClaim {
+  id                  Int       @id @default(autoincrement())
+  task_id             Int
+  slack_user_id       String
+  slack_user_name     String?
+  skills              Json?
+  can_meet_due_date   Boolean?
+  order               Int
+  created_at          DateTime  @default(now())
+  @@index([task_id])
+  @@index([slack_user_id])
+  @@map("task_claims")
+}
+
+// ── Basecamp Sync ────────────────────────────────────────────────────────────
+
+model BcBucket {
+  bucket_id   String   @id
+  customer_id Int?
+  name        String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now()) @updatedAt
+  @@index([customer_id])
+  @@map("bc_buckets")
+}
+
+model BcTodo {
+  todo_id               String    @id
+  bucket_id             String?
+  customer_id           Int?
+  responsible_person_id Int?
+  last_activity_at      DateTime?
+  due_at                DateTime?
+  completed_at          DateTime?
+  url                   String?
+  status                String    @default("open")
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @default(now()) @updatedAt
+  @@index([bucket_id])
+  @@index([customer_id])
+  @@index([responsible_person_id])
+  @@map("bc_todos")
+}
+
+model BcEvent {
+  id          BigInt   @id @default(autoincrement())
+  todo_id     String?
+  bucket_id   String?
+  event_type  String
+  actor_id    String?
+  payload     Json     @default("{}")
+  happened_at DateTime
+  ingested_at DateTime @default(now())
+  external_id String?  @unique
+  @@index([todo_id])
+  @@index([bucket_id])
+  @@index([event_type])
+  @@index([happened_at])
+  @@map("bc_events")
+}
+
+model BasecampTodo {
+  id                              Int       @id @default(autoincrement())
+  basecamp_todo_id                String    @unique
+  basecamp_project_id             String
+  basecamp_todolist_id            String
+  project_name                    String?
+  todolist_name                   String?
+  title                           String?
+  description                     String?
+  urls                            Json?
+  due_on                          DateTime?
+  due_in_days                     Int?
+  assignee_id                     String?
+  assignee_name                   String?
+  assigned_at                     DateTime?
+  updated_at                      DateTime?
+  completed                       Boolean   @default(false)
+  completed_at                    DateTime?
+  workflow_state                  String?
+  commitment_recorded             Boolean   @default(false)
+  commitment_note                 String?
+  followup_half_at                DateTime?
+  followup_final_third_at         DateTime?
+  risk_overdue                    Boolean   @default(false)
+  risk_due_soon                   Boolean   @default(false)
+  risk_unassigned_due_soon        Boolean   @default(false)
+  risk_assigned_uncommitted       Boolean   @default(false)
+  risk_no_due_date                Boolean   @default(false)
+  created_at                      DateTime  @default(now())
+  seen_at                         DateTime  @default(now())
+  last_synced_at                  DateTime  @default(now())
+  last_seen_unassigned_at         DateTime?
+  ai_clarify_posted_at            DateTime?
+  ai_clarify_comment_id           String?
+  intake_state                    String?
+  intake_last_ping_at             DateTime?
+  intake_ping_count               Int?
+  intake_comment_id               String?
+  intake_last_customer_comment_id String?
+  ai_meeting_is_meeting           Boolean?
+  ai_meeting_confidence           Decimal?  @db.Decimal(5, 2)
+  ai_meeting_reason               String?
+  ai_meeting_classified_at        DateTime?
+  lifecycle_state                 String    @default("CREATED")
+  lifecycle_updated_at            DateTime?
+  completion_signal_detected_at   DateTime?
+  on_hold_until                   DateTime?
+  @@index([basecamp_project_id])
+  @@index([basecamp_todolist_id])
+  @@map("basecamp_todos")
+}
+
+model BasecampThreadActivity {
+  id                                       Int       @id @default(autoincrement())
+  basecamp_account_id                      String
+  basecamp_bucket_id                       BigInt
+  basecamp_project_id                      String
+  basecamp_todo_id                         String?
+  thread_type                              String    @default("todo")
+  thread_url                               String?
+  org_id                                   Int?
+  assigned_va_id                           String?
+  assigned_va_name                         String?
+  last_customer_at                         DateTime?
+  last_customer_author                     String?
+  last_customer_text                       String?
+  last_tb_reply_at                         DateTime?
+  last_tb_reply_text                       String?
+  last_internal_comment_creator_id         String?
+  last_internal_comment_has_attachments    Boolean?
+  last_internal_comment_has_links          Boolean?
+  alerted_at_15m                           DateTime?
+  ack_posted_at_30m                        DateTime?
+  ack_basecamp_comment_id                  String?
+  dm_am_sent_at_30m                        DateTime?
+  dm_am_sent_at_60m                        DateTime?
+  ops_posted_at_90m                        DateTime?
+  comments_last_checked_at                 DateTime?
+  pending_human_followup                   Boolean   @default(false)
+  resolved_at                              DateTime?
+  resolved_by                              String?
+  last_comment_creator_id                  String?
+  last_comment_author_is_internal          Boolean?
+  last_auto_ack_at                         DateTime?
+  last_auto_ack_basecamp_comment_id        String?
+  open_loop_slack_ts                       String?
+  last_customer_comment_id                 String?
+  last_auto_ack_for_customer_comment_id    String?
+  last_customer_basecamp_comment_id        String?
+  last_handled_customer_comment_id         String?
+  last_tb_reply_basecamp_comment_id        String?
+  ai_needs_followup                        Boolean?
+  ai_followup_confidence                   Decimal?  @db.Decimal(5, 2)
+  ai_followup_reason                       String?
+  ai_classified_at                         DateTime?
+  ai_ack_posted_at                         DateTime?
+  ai_ack_comment_id                        String?
+  ai_ack_for_customer_comment_id           String?
+  ai_ack_reason                            String?
+  last_ai_ack_at                           DateTime?
+  last_ai_ack_customer_comment_id          String?
+  hygiene_dm_last_sent_at                  DateTime?
+  hygiene_dm_count                         Int?
+  hygiene_dm_status                        String?
+  hygiene_dm_slack_ts                      String?
+  hygiene_last_seen_internal_comment_id    String?
+  commitment_status                        String?
+  commitment_requested_at                  DateTime?
+  commitment_confirmed_at                  DateTime?
+  followup_half_done                       Boolean   @default(false)
+  followup_final_done                      Boolean   @default(false)
+  nudge_started_at                         DateTime?
+  nudge_ack_at                             DateTime?
+  nudge_stage                              String?
+  assigned_at                              DateTime?
+  due_at                                   DateTime?
+  checkpoint_50_at                         DateTime?
+  checkpoint_75_at                         DateTime?
+  checkpoint_50_confirmed_at               DateTime?
+  checkpoint_75_confirmed_at               DateTime?
+  checkpoint_50_confirmed_by_slack_user_id String?
+  checkpoint_75_confirmed_by_slack_user_id String?
+  checkpoint_50_due_at                     DateTime?
+  checkpoint_escalation_stage              String?
+  checkpoint_last_customer_comment_id      String?
+  checkpoint_last_processed_at             DateTime?
+  checkpoint_75_failed                     Boolean   @default(false)
+  checkpoint_75_failed_at                  DateTime?
+  meeting_followup_stage                   String?
+  meeting_followup_dm_sent_at              DateTime?
+  meeting_followup_ack_status              String?
+  meeting_followup_ack_at                  DateTime?
+  meeting_followup_ack_by_slack_user_id    String?
+  meeting_followup_last_processed_at       DateTime?
+  last_sla_alerted_at                      DateTime?
+  last_sla_alert_key                       String?
+  last_sla_tier                            String?
+  last_sla_attempted_at                    DateTime?
+  last_sla_attempt_error                   String?
+  created_at                               DateTime  @default(now())
+  updated_at                               DateTime  @default(now()) @updatedAt
+  @@index([basecamp_bucket_id])
+  @@map("basecamp_thread_activity")
+}
+
+model SystemPostHistory {
+  id                    Int      @id @default(autoincrement())
+  basecamp_todo_id      String
+  purpose               String
+  fingerprint           String
+  basecamp_comment_id   String?
+  actor                 String?
+  source_path           String?
+  created_at            DateTime @default(now())
+  @@index([basecamp_todo_id])
+  @@index([purpose])
+  @@index([created_at])
+  @@map("system_post_history")
+}
+
+model BasecampPersonToken {
+  person_id     String    @id
+  token         String
+  refresh_token String?
+  expires_at    DateTime?
+  slack_user_id String?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @default(now()) @updatedAt
+  @@map("basecamp_person_tokens")
+}
+
+// ── AI Layer ─────────────────────────────────────────────────────────────────
+
+model AiTask {
+  id                    BigInt   @id @default(autoincrement())
+  org_id                Int?
+  basecamp_todo_id      String
+  basecamp_project_id   String?
+  basecamp_bucket_id    String?
+  thread_url            String?
+  title                 String?
+  status                String   @default("open")
+  created_at            DateTime @default(now())
+  updated_at            DateTime @default(now()) @updatedAt
+  @@index([basecamp_todo_id])
+  @@map("ai_tasks")
+}
+
+model AiTaskEvent {
+  id           BigInt   @id @default(autoincrement())
+  org_id       Int?
+  task_id      BigInt
+  event_ts     DateTime @default(now())
+  event_type   String
+  actor_id     String?
+  channel      String   @default("system")
+  external_id  String?
+  payload_json Json     @default("{}")
+  dedupe_key   String?  @unique
+  @@index([task_id])
+  @@map("ai_task_events")
+}
+
+model AiReport {
+  id                       BigInt    @id @default(autoincrement())
+  org_id                   Int?
+  report_type              String
+  period_start             DateTime?
+  period_end               DateTime?
+  generated_at             DateTime  @default(now())
+  summary_text             String
+  highlights_json          Json      @default("{}")
+  recommendations_json     Json      @default("{}")
+  slack_channel            String?
+  posted_to_slack_ts       String?
+  @@map("ai_reports")
+}
+
+model Interaction {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  source           String
+  customer_id      Int
+  todo_id          String?
+  person_id        Int?
+  interaction_type String
+  happened_at      DateTime
+  payload          Json?
+  @@index([customer_id])
+  @@index([todo_id])
+  @@index([person_id])
+  @@index([interaction_type])
+  @@index([happened_at])
+  @@map("interactions")
+}
+
+model Intervention {
+  id                              BigInt    @id @default(autoincrement())
+  level                           String
+  reason                          String
+  target_person_id                String?
+  customer_id                     Int?
+  todo_id                         String?
+  status                          String    @default("open")
+  created_at                      DateTime  @default(now())
+  sent_at                         DateTime?
+  response_at                     DateTime?
+  resolved_at                     DateTime?
+  resolution_kind                 String?
+  root_cause_category             String?
+  resolution_note                 String?
+  slack_msg_ts                    String?
+  slack_channel_id                String?
+  bc_verify_started_at            DateTime?
+  bc_verify_comment_found         Boolean?
+  bc_verify_comment_id            String?
+  bc_verify_checked_at            DateTime?
+  basecamp_verified_at            DateTime?
+  basecamp_verification_failed    Boolean?
+  parent_intervention_id          BigInt?
+  sla_due_at                      DateTime?
+  sla_breached_at                 DateTime?
+  resolution_action               String?
+  @@index([target_person_id])
+  @@index([todo_id])
+  @@index([slack_msg_ts])
+  @@map("interventions")
+}
+
+// ── Scoring ──────────────────────────────────────────────────────────────────
+
+model ScoreDaily {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  day         DateTime
+  customer_id Int?
+  person_id   Int?
+  score_type  String
+  score_value Decimal   @db.Decimal(5, 2)
+  trend_value Decimal?  @db.Decimal(6, 2)
+  band        String?
+  flags       Json?
+  @@unique([day, score_type, customer_id, person_id], name: "scores_daily_unique_day_type_subject")
+  @@index([day])
+  @@index([customer_id])
+  @@index([person_id])
+  @@map("scores_daily")
+}
+
+model Tier {
+  id                    Int       @id @default(autoincrement())
+  customer_id           Int       @unique
+  auto_tier             String    @default("B")
+  auto_tier_computed_at DateTime?
+  manual_tier           String?
+  manual_tier_set_by    String?
+  manual_tier_set_at    DateTime?
+  effective_tier        String    @default("B")
+  computed_at           DateTime  @default(now())
+  updated_at            DateTime  @default(now()) @updatedAt
+  @@index([effective_tier])
+  @@map("tiers")
+}
+
+model ManagerReview {
+  id                Int       @id @default(autoincrement())
+  manager_id        Int
+  triggered_at      DateTime  @default(now())
+  trigger_reason    String?
+  scheduled_for_at  DateTime?
+  notes             String?
+  closed_at         DateTime?
+  created_at        DateTime  @default(now())
+  @@index([manager_id])
+  @@map("manager_reviews")
+}
+
+model VaMetricsDaily {
+  org_id              Int      @default(0)
+  person_id           String
+  day                 DateTime
+  tasks_touched       Int      @default(0)
+  tasks_completed     Int      @default(0)
+  sla_breaches        Int      @default(0)
+  ops_escalations     Int      @default(0)
+  pending_followups   Int      @default(0)
+  quality_score       Decimal? @db.Decimal(5, 2)
+  @@id([org_id, person_id, day])
+  @@map("va_metrics_daily")
+}
+
+model VaPerformanceSnapshot {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  va_id        String    @db.Uuid
+  period_start DateTime
+  period_end   DateTime
+  metrics_json Json      @default("{}")
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @default(now()) @updatedAt
+  @@unique([va_id, period_start, period_end], name: "va_perf_snap_unique")
+  @@index([va_id])
+  @@index([period_start])
+  @@index([period_end])
+  @@map("va_performance_snapshots")
+}
+
+model VaLoadState {
+  va_id             String   @id @db.Uuid
+  active_task_count Int      @default(0)
+  throttle_level    String   @default("normal")
+  burnout_flag      Boolean  @default(false)
+  reasons_json      Json     @default("[]")
+  updated_at        DateTime @default(now()) @updatedAt
+  @@map("va_load_state")
+}
+
+// ── Job Board ────────────────────────────────────────────────────────────────
+
+model JobBoardPost {
+  id                          Int       @id @default(autoincrement())
+  todo_id                     String    @unique
+  bucket_id                   String?
+  project_id                  String?
+  todo_title                  String    @default("")
+  todo_url                    String?
+  status                      String    @default("posted")
+  first_seen_at               DateTime  @default(now())
+  posted_at                   DateTime  @default(now())
+  last_seen_unassigned_at     DateTime?
+  first_posted_at             DateTime?
+  posted_by_run_id            String?
+  claimed_at                  DateTime?
+  claimed_by_slack_user_id    String?
+  assigned_at                 DateTime?
+  assigned_by_slack_user_id   String?
+  assigned_basecamp_person_id String?
+  selected_slack_user_id      String?
+  closed_at                   DateTime?
+  expired_at                  DateTime?
+  rescinded_at                DateTime?
+  slack_channel_id            String    @default("")
+  slack_ts                    String?
+  slack_permalink             String?
+  last_post_error             String?
+  last_post_attempt_at        DateTime?
+  post_attempts               Int       @default(0)
+  last_escalated_at           DateTime?
+  recommended_by_ai           Boolean   @default(false)
+  approved_by_human_user_id   String?
+  approved_at                 DateTime?
+  @@map("job_board_posts")
+}
+
+model JobBoardSkip {
+  id             Int      @id @default(autoincrement())
+  todo_id        String
+  skipped_reason String
+  skipped_at     DateTime @default(now())
+  run_id         String?
+  project_id     String?
+  todolist_id    String?
+  title          String?
+  @@index([todo_id])
+  @@map("job_board_skips")
+}
+
+model JobBoardCandidate {
+  id                          Int       @id @default(autoincrement())
+  todo_id                     String
+  slack_user_id               String
+  basecamp_person_id          String?
+  created_at                  DateTime  @default(now())
+  status                      String    @default("active")
+  selected_at                 DateTime?
+  selected_by_slack_user_id   String?
+  source                      String    @default("slack_interested")
+  note                        String?
+  features_json               Json      @default("{}")
+  score_overall               Decimal?  @db.Decimal(5, 2)
+  score_breakdown_json        Json      @default("{}")
+  @@map("job_board_candidates")
+}
+
+model JobBoardRecommendation {
+  id                        Int       @id @default(autoincrement())
+  todo_id                   String
+  created_at                DateTime  @default(now())
+  created_by                String?
+  model                     String?
+  prompt_version            String?
+  ranking_json              Json      @default("{}")
+  selected_slack_user_id    String?
+  rationale                 String?
+  @@map("job_board_recommendations")
+}
+
+// ── Reporting ────────────────────────────────────────────────────────────────
+
+model VaWeeklyMetric {
+  id                  Int       @id @default(autoincrement())
+  slack_user_id       String
+  week_start          DateTime
+  interested_count    Int       @default(0)
+  selected_count      Int       @default(0)
+  assigned_count      Int       @default(0)
+  completed_count     Int       @default(0)
+  avg_selection_rank  Decimal?  @db.Decimal(5, 2)
+  notes_json          Json      @default("{}")
+  @@map("va_weekly_metrics")
+}
+
+model OpsWeeklyBrief {
+  id                  Int       @id @default(autoincrement())
+  week_start          DateTime
+  generated_at        DateTime  @default(now())
+  source_data_json    Json      @default("{}")
+  brief_json          Json      @default("{}")
+  brief_text          String?
+  model               String?
+  prompt_version      String?
+  @@map("ops_weekly_briefs")
+}
+
+model VaWeeklyScorecard {
+  id                  Int       @id @default(autoincrement())
+  slack_user_id       String
+  week_start          DateTime
+  generated_at        DateTime  @default(now())
+  source_data_json    Json      @default("{}")
+  scorecard_json      Json      @default("{}")
+  scorecard_text      String?
+  notes_json          Json      @default("{}")
+  model               String?
+  prompt_version      String?
+  @@map("va_weekly_scorecards")
+}
+
+// ── Task Intelligence (ACS/MSP) ──────────────────────────────────────────────
+
+model TaskSuccessPlan {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  basecamp_thread_id   String    @unique
+  client_id            String?   @db.Uuid
+  va_id                String?   @db.Uuid
+  generated_plan       Json
+  va_modified_plan     Json?
+  task_type_suggested  String
+  task_type_final      String?
+  status               String    @default("generated")
+  confirmed_at         DateTime?
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @default(now()) @updatedAt
+  @@index([basecamp_thread_id])
+  @@index([client_id])
+  @@index([va_id])
+  @@map("task_success_plans")
+}
+
+model TaskCompletionReport {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  basecamp_thread_id  String    @unique
+  client_id           String?   @db.Uuid
+  va_id               String?   @db.Uuid
+  success_plan_id     String?   @db.Uuid
+  task_type           String    @default("other")
+  draft_report        Json
+  approved_report     Json?
+  status              String    @default("drafted")
+  approved_at         DateTime?
+  posted_at           DateTime?
+  basecamp_post_id    String?
+  error               String?
+  completed_at        DateTime?
+  edit_count          Int       @default(0)
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @default(now()) @updatedAt
+  @@index([basecamp_thread_id])
+  @@index([client_id])
+  @@index([va_id])
+  @@map("task_completion_reports")
+}
+
+model TaskQualityEvent {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  basecamp_thread_id    String
+  basecamp_comment_id   String
+  comment_author        String?
+  event_type            String
+  matched_keywords      Json      @default("[]")
+  snippet               String
+  dedupe_key            String    @unique
+  created_at            DateTime  @default(now())
+  processed_at          DateTime  @default(now())
+  @@index([basecamp_thread_id])
+  @@index([basecamp_comment_id])
+  @@index([event_type])
+  @@map("task_quality_events")
+}
+
+model ClientPlaybook {
+  client_id       String    @id @db.Uuid
+  playbook_json   Json      @default("{}")
+  top_rules       Json      @default("[]")
+  signals_json    Json      @default("{}")
+  last_built_at   DateTime?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @default(now()) @updatedAt
+  @@map("client_playbooks")
+}
+
+model TaskIntegrityFinding {
+  id           Int       @id @default(autoincrement())
+  todo_id      Int
+  finding_type String
+  detail       String?
+  severity     String    @default("warning")
+  detected_at  DateTime  @default(now())
+  resolved_at  DateTime?
+  @@unique([finding_type, todo_id], name: "uq_finding_todo")
+  @@map("task_integrity_findings")
+}
+
+// ── Billing / Buckets ─────────────────────────────────────────────────────────
+
+model Bucket {
+  id                     Int       @id @default(autoincrement())
+  customer_id            Int
+  hours_purchased        Decimal   @default(0) @db.Decimal(10, 2)
+  hours_used             Decimal   @default(0) @db.Decimal(10, 2)
+  hours_balance          Decimal   @default(0) @db.Decimal(10, 2)
+  status                 String    @default("active")
+  stripe_payment_id      String?
+  stripe_subscription_id String?
+  purchased_at           DateTime  @default(now())
+  rollover_date          DateTime?
+  notes                  String?
+  hpp_protected          Boolean   @default(false)
+  hpp_paused_at          DateTime?
+  hpp_resumed_at         DateTime?
+  is_bonus               Boolean   @default(false)
+  bonus_expires_at       DateTime?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @default(now()) @updatedAt
+  @@index([customer_id])
+  @@index([stripe_payment_id])
+  @@index([stripe_subscription_id])
+  @@map("buckets")
+}
+
+model TimeEntry {
+  id                  Int       @id @default(autoincrement())
+  bucket_id           Int?
+  customer_id         Int
+  va_id               Int?
+  basecamp_todo_id    String?
+  clockify_entry_id   String?   @unique
+  start_time          DateTime?
+  end_time            DateTime?
+  duration_minutes    Decimal   @db.Decimal(8, 2)
+  description         String?
+  status              String    @default("draft")
+  approved_at         DateTime?
+  approved_by         Int?
+  rejected_reason     String?
+  notes               String?
+  attachments         Json      @default("[]")
+  edit_history        Json      @default("[]")
+  device_info         Json?
+  ip_address          String?
+  user_agent          String?
+  geo_location        Json?
+  dashboard_user_id   Int?
+  payroll_locked      Boolean   @default(false)
+  payroll_lock_date   DateTime?
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @default(now()) @updatedAt
+  @@index([bucket_id])
+  @@index([customer_id])
+  @@index([va_id])
+  @@index([basecamp_todo_id])
+  @@map("time_entries")
+}
+
+model HppSubscription {
+  id                      Int       @id @default(autoincrement())
+  customer_id             Int
+  stripe_subscription_id  String    @unique
+  status                  String    @default("active")
+  current_period_start    DateTime?
+  current_period_end      DateTime?
+  cancelled_at            DateTime?
+  created_at              DateTime  @default(now())
+  updated_at              DateTime  @default(now()) @updatedAt
+  @@index([customer_id])
+  @@map("hpp_subscriptions")
+}
+
+model PayrollConfig {
+  id             Int      @id @default(autoincrement())
+  lock_day_1     Int      @default(1)
+  lock_day_2     Int      @default(15)
+  reminder_hours Int      @default(48)
+  updated_by     Int?
+  updated_at     DateTime @default(now()) @updatedAt
+  @@map("payroll_config")
+}
+
+model StripeEvent {
+  id               Int      @id @default(autoincrement())
+  stripe_event_id  String   @unique
+  event_type       String
+  processed        Boolean  @default(false)
+  payload_summary  Json?
+  customer_id      Int?
+  bucket_id        Int?
+  error            String?
+  created_at       DateTime @default(now())
+  @@map("stripe_events")
+}
+
+// ── Clockify Integration ──────────────────────────────────────────────────────
+
+model ClockifyProject {
+  id                  Int       @id @default(autoincrement())
+  clockify_project_id String    @unique
+  customer_id         Int?
+  name                String    @default("")
+  archived            Boolean   @default(false)
+  color               String?
+  billable            Boolean   @default(true)
+  hourly_rate         Decimal?  @db.Decimal(10, 2)
+  clockify_client_id  String?
+  synced_at           DateTime  @default(now())
+  created_at          DateTime  @default(now())
+  @@index([customer_id])
+  @@map("clockify_projects")
+}
+
+model ClockifyTag {
+  id              Int      @id @default(autoincrement())
+  clockify_tag_id String   @unique
+  name            String   @default("")
+  archived        Boolean  @default(false)
+  synced_at       DateTime @default(now())
+  created_at      DateTime @default(now())
+  @@map("clockify_tags")
+}
+
+model ClockifyTask {
+  id                  Int      @id @default(autoincrement())
+  clockify_task_id    String   @unique
+  clockify_project_id String?
+  name                String   @default("")
+  status              String   @default("ACTIVE")
+  assignee_ids        Json     @default("[]")
+  synced_at           DateTime @default(now())
+  created_at          DateTime @default(now())
+  @@map("clockify_tasks")
+}
+
+model ClockifySyncLog {
+  id             Int       @id @default(autoincrement())
+  entity_type    String
+  last_synced_at DateTime?
+  entries_synced Int       @default(0)
+  status         String    @default("running")
+  error          String?
+  created_at     DateTime  @default(now())
+  @@map("clockify_sync_log")
+}

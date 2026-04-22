@@ -1,0 +1,14 @@
+import { NextResponse } from "next/server";
+import { verifyCronSecret } from "@/lib/cron-guard";
+import { inngest } from "@/inngest/client";
+
+export const runtime = "nodejs";
+
+export async function GET(req: Request) {
+  if (!verifyCronSecret(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  // Trigger daily ops digest via Inngest event
+  await inngest.send({ name: "tb/daily-ops.requested", data: {} });
+  return NextResponse.json({ triggered: true });
+}
