@@ -1067,3 +1067,24 @@ model ClockifySyncLog {
   created_at     DateTime  @default(now())
   @@map("clockify_sync_log")
 }
+
+// ── Payment Events ─────────────────────────────────────────────────────────────
+
+model PaymentEvent {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider     String                        // paypal | veem | stripe
+  event_type   String
+  provider_ref String?   @unique             // idempotency key from provider
+  amount_cents Int?
+  currency     String?   @default("USD")
+  customer_id  Int?
+  bucket_id    Int?
+  status       String    @default("received")
+  raw_payload  Json?
+  error        String?
+  created_at   DateTime  @default(now())
+  @@index([provider])
+  @@index([customer_id])
+  @@index([created_at])
+  @@map("payment_events")
+}

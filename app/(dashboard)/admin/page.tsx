@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import Link from "next/link";
-import { Users, Building2, Mail, Clock, Settings } from "lucide-react";
+import { Users, Building2, Mail, Clock, BarChart2, CreditCard, Settings } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +28,18 @@ const sections = [
     icon: Clock,
     label: "Clockify Sync",
     description: "Monitor sync health, trigger incremental or full imports",
+  },
+  {
+    href: "/admin/acs-metrics",
+    icon: BarChart2,
+    label: "ACS Metrics",
+    description: "Phase 6 reporting quality: post rate, time-to-post, blocker frequency",
+  },
+  {
+    href: "/admin/payments",
+    icon: CreditCard,
+    label: "Payment History",
+    description: "PayPal, Veem, and Stripe payment events and provisioning log",
   },
 ];
 

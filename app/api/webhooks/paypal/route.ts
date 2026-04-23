@@ -128,6 +128,20 @@ export async function POST(req: Request) {
     );
   }
 
+  // Record payment event for audit trail
+  await prisma.paymentEvent.create({
+    data: {
+      provider: provider ?? "unknown",
+      event_type: eventType || "payment",
+      provider_ref: externalRef || null,
+      amount_cents: Math.round(amountUsd * 100),
+      currency: "USD",
+      customer_id: customerId ?? null,
+      status: customerId && hoursToAdd > 0 ? "provisioned" : "received",
+      raw_payload: payload as object,
+    },
+  }).catch(() => { /* non-fatal — don't block webhook response */ });
+
   return NextResponse.json({
     ok: true,
     provisioned: customerId ? { customer_id: customerId, hours: hoursToAdd } : null,
