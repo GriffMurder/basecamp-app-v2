@@ -132,6 +132,7 @@ model Customer {
   bucket_last_added_at    DateTime?
   created_at              DateTime  @default(now())
   updated_at              DateTime  @default(now()) @updatedAt
+  carReports              CarReport[]
   @@map("customers")
 }
 
@@ -1087,4 +1088,23 @@ model PaymentEvent {
   @@index([customer_id])
   @@index([created_at])
   @@map("payment_events")
+}
+
+// ── Client Advantage Reports ────────────────────────────────────────────────
+
+model CarReport {
+  id              Int      @id @default(autoincrement())
+  customer_id     Int
+  period_start    DateTime @db.Date
+  period_end      DateTime @db.Date
+  metrics_json    Json
+  narrative_json  Json
+  generated_at    DateTime @default(now())
+  generation_type String   @default("monthly")
+  customer        Customer @relation(fields: [customer_id], references: [id])
+
+  @@unique([customer_id, period_start, period_end])
+  @@index([customer_id])
+  @@index([period_start])
+  @@map("car_reports")
 }

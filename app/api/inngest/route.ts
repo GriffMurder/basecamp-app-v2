@@ -30,6 +30,7 @@ import { vaOverloadMonitor } from "@/inngest/functions/va-overload-monitor";
 import { managerEscalation } from "@/inngest/functions/manager-escalation";
 import { qualityScan } from "@/inngest/functions/quality-scan";
 import { projectActivitySync } from "@/inngest/functions/project-activity-sync";
+import { carBuilder } from "@/inngest/functions/car-builder";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -62,5 +63,6 @@ export const { GET, POST, PUT } = serve({
     managerEscalation,
     qualityScan,
     projectActivitySync,
+    carBuilder,
   ],
 });

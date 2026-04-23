@@ -30,6 +30,7 @@ const links = [
   { href: "/audit", label: "Audit Log", icon: Shield },
   { href: "/admin/dim", label: "DIM", icon: Shield },
   { href: "/admin/scores", label: "Scores", icon: BarChart2 },
+  { href: "/admin/car-reports", label: "CAR Reports", icon: FileText },
   { href: "/admin", label: "Admin", icon: Settings },
 ];
 
