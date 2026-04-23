@@ -251,6 +251,14 @@ const JOBS: Job[] = [
     method: "GET",
     category: "cron",
   },
+  {
+    id: "advantage-report-builder",
+    label: "Advantage Report Builder",
+    description: "Build branded monthly Advantage Reports for all clients and VAs (prior month)",
+    endpoint: "/api/cron/advantage-report-builder",
+    method: "GET",
+    category: "cron",
+  },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {

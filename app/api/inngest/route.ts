@@ -31,6 +31,7 @@ import { managerEscalation } from "@/inngest/functions/manager-escalation";
 import { qualityScan } from "@/inngest/functions/quality-scan";
 import { projectActivitySync } from "@/inngest/functions/project-activity-sync";
 import { carBuilder } from "@/inngest/functions/car-builder";
+import { advantageReportBuilder } from "@/inngest/functions/advantage-report-builder";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -64,5 +65,6 @@ export const { GET, POST, PUT } = serve({
     qualityScan,
     projectActivitySync,
     carBuilder,
+    advantageReportBuilder,
   ],
 });

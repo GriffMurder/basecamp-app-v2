@@ -1090,6 +1090,28 @@ model PaymentEvent {
   @@map("payment_events")
 }
 
+// ── Advantage Reports (Phase 6 Step 4/5) ───────────────────────────────────
+
+model AdvantageReport {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  report_type     String                        // "client_monthly" | "va_monthly"
+  subject_id      String   @db.Uuid             // uuid5 of customer or VA
+  period_start    DateTime @db.Date
+  period_end      DateTime @db.Date
+  metrics_json    Json
+  narrative_json  Json
+  rendered_html   String?
+  status          String   @default("draft")    // "draft" | "rendered"
+  generation_type String   @default("manual")
+  created_at      DateTime @default(now())
+
+  @@unique([report_type, subject_id, period_start, period_end])
+  @@index([report_type])
+  @@index([subject_id])
+  @@index([period_start])
+  @@map("advantage_reports")
+}
+
 // ── Client Advantage Reports ────────────────────────────────────────────────
 
 model CarReport {
