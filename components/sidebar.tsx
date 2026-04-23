@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, CheckSquare, Building2,
   BarChart2, Settings, LogOut, Briefcase, Cog, FileText,
   Clock, Shield, UserCircle, DollarSign, ThumbsUp,
-  Activity, AlertTriangle, ShieldAlert, TrendingUp,
+  Activity, AlertTriangle, ShieldAlert, TrendingUp, Smile,
 } from "lucide-react";
 
 const links = [
@@ -32,6 +32,7 @@ const links = [
   { href: "/admin/scores", label: "Scores", icon: BarChart2 },
   { href: "/admin/car-reports", label: "CAR Reports", icon: FileText },
   { href: "/admin/advantage-reports", label: "Advantage Reports", icon: TrendingUp },
+  { href: "/admin/sentiment", label: "Sentiment", icon: Smile },
   { href: "/admin", label: "Admin", icon: Settings },
 ];
 

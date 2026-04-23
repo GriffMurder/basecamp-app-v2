@@ -32,6 +32,7 @@ import { qualityScan } from "@/inngest/functions/quality-scan";
 import { projectActivitySync } from "@/inngest/functions/project-activity-sync";
 import { carBuilder } from "@/inngest/functions/car-builder";
 import { advantageReportBuilder } from "@/inngest/functions/advantage-report-builder";
+import { sentimentScan } from "@/inngest/functions/sentiment-scan";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -66,5 +67,6 @@ export const { GET, POST, PUT } = serve({
     projectActivitySync,
     carBuilder,
     advantageReportBuilder,
+    sentimentScan,
   ],
 });

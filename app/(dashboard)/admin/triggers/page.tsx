@@ -259,6 +259,14 @@ const JOBS: Job[] = [
     method: "GET",
     category: "cron",
   },
+  {
+    id: "sentiment-scan",
+    label: "Sentiment Scan",
+    description: "Score recent customer comments with AI sentiment analysis and post dip alerts to Ops",
+    endpoint: "/api/cron/sentiment-scan",
+    method: "GET",
+    category: "cron",
+  },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {
