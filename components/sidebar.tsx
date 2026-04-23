@@ -27,6 +27,7 @@ const links = [
   { href: "/time-tracking", label: "Time Tracking", icon: Clock },
   { href: "/insights", label: "Insights", icon: BarChart2 },
   { href: "/audit", label: "Audit Log", icon: Shield },
+  { href: "/admin/dim", label: "DIM", icon: Shield },
   { href: "/admin", label: "Admin", icon: Settings },
 ];
 

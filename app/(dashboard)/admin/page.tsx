@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import Link from "next/link";
-import { Users, Building2, Mail, Clock, BarChart2, CreditCard, Settings, AlertTriangle, Zap } from "lucide-react";
+import { Users, Building2, Mail, Clock, BarChart2, CreditCard, Settings, AlertTriangle, Zap, Shield } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +58,12 @@ const sections = [
     icon: Zap,
     label: "Manual Triggers",
     description: "Fire scheduled jobs and admin actions on demand",
+  },
+  {
+    href: "/admin/dim",
+    icon: Shield,
+    label: "Data Integrity Monitor",
+    description: "Lifecycle anomalies: stuck tasks, stale in-progress, orphan assignments",
   },
 ];
 

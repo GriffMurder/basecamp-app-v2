@@ -91,6 +91,14 @@ const JOBS: Job[] = [
     body: {},
     category: "admin",
   },
+  {
+    id: "dim-scan",
+    label: "DIM Integrity Scan",
+    description: "Runs the nightly data integrity monitor now — detects stuck/stale/orphan todos",
+    endpoint: "/api/cron/dim",
+    method: "GET",
+    category: "cron",
+  },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {
