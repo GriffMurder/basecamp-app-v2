@@ -211,6 +211,22 @@ const JOBS: Job[] = [
     method: "GET",
     category: "cron",
   },
+  {
+    id: "va-overload-monitor",
+    label: "VA Overload Monitor",
+    description: "Assess VA WIP counts and quality dips, upsert va_load_state",
+    endpoint: "/api/cron/va-overload-monitor",
+    method: "GET",
+    category: "cron",
+  },
+  {
+    id: "manager-escalation",
+    label: "Manager Escalation Scan",
+    description: "Scan overdue todos for manager escalation triggers, post Slack alerts",
+    endpoint: "/api/cron/manager-escalation",
+    method: "GET",
+    category: "cron",
+  },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {

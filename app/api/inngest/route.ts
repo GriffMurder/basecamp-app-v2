@@ -26,6 +26,8 @@ import { acsDraft } from "@/inngest/functions/acs-draft";
 import { scoreCompute } from "@/inngest/functions/score-compute";
 import { tierCompute } from "@/inngest/functions/tier-compute";
 import { systemHeartbeat } from "@/inngest/functions/system-heartbeat";
+import { vaOverloadMonitor } from "@/inngest/functions/va-overload-monitor";
+import { managerEscalation } from "@/inngest/functions/manager-escalation";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -54,5 +56,7 @@ export const { GET, POST, PUT } = serve({
     scoreCompute,
     tierCompute,
     systemHeartbeat,
+    vaOverloadMonitor,
+    managerEscalation,
   ],
 });

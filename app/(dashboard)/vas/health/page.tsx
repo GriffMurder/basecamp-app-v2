@@ -1,5 +1,6 @@
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { vaUuid } from "@/lib/uuid5";
 import Link from "next/link";
 import { Activity, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
@@ -115,13 +116,13 @@ export default async function TeamHealthPage() {
     },
   });
 
-  // Compute uuid5 for each VA id to match VaLoadState.va_id
-  // Python uses uuid.uuid5(NAMESPACE_OID, f"va:{va_id}")
-  // We'll include the raw va_id in load state and match by va_id string (if available)
-  // For now, build a simple map by all load states — match will be empty if no data
-  const loadStateMap: Record<string, (typeof loadStates)[0]> = {};
+  // Build loadStateMap keyed by Va.id (Int) using uuid5 derivation
+  // vaUuid(va.id) matches Python: uuid.uuid5(NAMESPACE_OID, f"va:{va_id}")
+  const uuidToVaId = new Map(vas.map((v) => [vaUuid(v.id), v.id]));
+  const loadStateMap: Record<number, (typeof loadStates)[0]> = {};
   for (const ls of loadStates) {
-    loadStateMap[ls.va_id] = ls;
+    const vaId = uuidToVaId.get(ls.va_id);
+    if (vaId != null) loadStateMap[vaId] = ls;
   }
 
   // Enrich VAs
@@ -132,7 +133,8 @@ export default async function TeamHealthPage() {
     const capScore = latestScores[capKey] ?? null;
     const relValue = relScore?.score_value ?? toNum(va.reliability_score);
     const capValue = capScore?.score_value ?? toNum(va.capacity_index);
-    return { va, relScore: { ...relScore, score_value: relValue }, capScore: { ...capScore, score_value: capValue } };
+    const loadState = loadStateMap[va.id] ?? null;
+    return { va, relScore: { ...relScore, score_value: relValue }, capScore: { ...capScore, score_value: capValue }, loadState };
   });
 
   // Summary stats
@@ -206,9 +208,7 @@ export default async function TeamHealthPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {enriched.map(({ va, relScore, capScore }) => {
-              // Match load state by any means — we don't have uuid5, so show N/A
-              const loadState = null as (typeof loadStates)[0] | null;
+            {enriched.map(({ va, relScore, capScore, loadState }) => {
               return (
                 <tr key={va.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
@@ -242,8 +242,8 @@ export default async function TeamHealthPage() {
                   <td className="px-4 py-3">
                     <ScoreBadge value={capScore.score_value ?? null} />
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">—</td>
-                  <td className="px-4 py-3 text-xs text-gray-400">Normal</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">{loadState ? loadState.active_task_count : "—"}</td>
+                  <td className="px-4 py-3">{loadState ? <ThrottleBadge level={loadState.throttle_level} /> : <span className="text-xs text-gray-400">—</span>}</td>
                   <td className="px-4 py-3 text-right">
                     <Link href={`/vas/${va.id}`} className="text-xs text-blue-500 hover:underline">
                       Detail →
