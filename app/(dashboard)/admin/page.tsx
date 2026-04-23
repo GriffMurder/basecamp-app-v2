@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import Link from "next/link";
-import { Users, Building2, Mail, Clock, BarChart2, CreditCard, Settings } from "lucide-react";
+import { Users, Building2, Mail, Clock, BarChart2, CreditCard, Settings, AlertTriangle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +40,18 @@ const sections = [
     icon: CreditCard,
     label: "Payment History",
     description: "PayPal, Veem, and Stripe payment events and provisioning log",
+  },
+  {
+    href: "/ops/briefs",
+    icon: BarChart2,
+    label: "Ops Weekly Briefs",
+    description: "Generate and review AI weekly operations briefs",
+  },
+  {
+    href: "/escalations",
+    icon: AlertTriangle,
+    label: "Escalations",
+    description: "Open VA, manager, and founder-level intervention queue",
   },
 ];
 
