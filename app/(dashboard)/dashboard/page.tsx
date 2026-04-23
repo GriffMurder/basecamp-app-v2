@@ -143,7 +143,7 @@ export default async function DashboardPage() {
             </Link>
           )}
           {kpis.pendingApprovals > 0 && (
-            <Link href="/admin/time" className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 hover:bg-blue-100 transition-colors">
+            <Link href="/approvals" className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 hover:bg-blue-100 transition-colors">
               <Clock className="w-5 h-5 text-blue-500 shrink-0" />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-blue-800">{kpis.pendingApprovals} time entr{kpis.pendingApprovals !== 1 ? "ies" : "y"} pending approval</p>

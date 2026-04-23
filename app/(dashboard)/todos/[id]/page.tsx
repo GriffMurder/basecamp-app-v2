@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { AssignRecommender } from "./assign-recommender";
+import { ClaimButton } from "./claim-button";
 import { CheckSquare, ArrowLeft, Clock, Calendar, User, AlertCircle, ClipboardList, ShieldAlert } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -153,6 +154,14 @@ export default async function TodoDetailPage({
         <div className="bg-white rounded-lg border shadow-sm p-5 space-y-3">
           <h2 className="text-sm font-semibold text-gray-700">Assign VA</h2>
           <AssignRecommender title={todo.title ?? ""} />
+        </div>
+      )}
+
+      {/* Claim Task */}
+      {!todo.completed && (
+        <div className="bg-white rounded-lg border shadow-sm p-5 space-y-3">
+          <h2 className="text-sm font-semibold text-gray-700">Claim Task</h2>
+          <ClaimButton todoId={todo.id} />
         </div>
       )}
 
