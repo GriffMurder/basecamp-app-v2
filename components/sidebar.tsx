@@ -6,13 +6,14 @@ import {
   LayoutDashboard, Users, CheckSquare, Building2,
   BarChart2, Settings, LogOut, Briefcase, Cog, FileText,
   Clock, Shield, UserCircle, DollarSign, ThumbsUp,
-  Activity, AlertTriangle,
+  Activity, AlertTriangle, ShieldAlert,
 } from "lucide-react";
 
 const links = [
   { href: "/dashboard", label: "Command Center", icon: LayoutDashboard },
   { href: "/todos", label: "Tasks", icon: CheckSquare },
   { href: "/customers", label: "Clients", icon: Building2 },
+  { href: "/customers/health", label: "Client Health", icon: ShieldAlert },
   { href: "/vas", label: "Team", icon: Users },
   { href: "/vas/health", label: "Team Health", icon: Activity },
   { href: "/vas/scorecards", label: "Scorecards", icon: FileText },

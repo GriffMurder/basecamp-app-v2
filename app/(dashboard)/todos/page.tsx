@@ -115,9 +115,11 @@ export default async function TodosPage({
               return (
                 <tr key={t.id} className={overdue ? "bg-red-50" : "hover:bg-gray-50"}>
                   <td className="px-4 py-2.5 max-w-xs">
-                    <p className={`font-medium truncate ${t.completed ? "line-through text-gray-400" : "text-gray-900"}`}>
-                      {t.title ?? t.basecamp_todo_id}
-                    </p>
+                    <Link href={`/todos/${t.id}`} className="hover:underline">
+                      <p className={`font-medium truncate ${t.completed ? "line-through text-gray-400" : "text-gray-900 hover:text-blue-600"}`}>
+                        {t.title ?? t.basecamp_todo_id}
+                      </p>
+                    </Link>
                     <p className="text-xs text-gray-400 truncate">BC: {t.basecamp_project_id}</p>
                   </td>
                   <td className="px-4 py-2.5 text-gray-600">{t.assignee_name ?? "—"}</td>

@@ -131,6 +131,22 @@ const JOBS: Job[] = [
     method: "GET",
     category: "cron",
   },
+  {
+    id: "va-personalized-nudges",
+    label: "VA Personalized Nudges",
+    description: "DMs each active VA their at-risk threads (needs TB reply for 4+ hours)",
+    endpoint: "/api/cron/va-personalized-nudges",
+    method: "GET",
+    category: "cron",
+  },
+  {
+    id: "va-snapshot",
+    label: "VA Snapshot (Daily)",
+    description: "Computes and upserts VaPerformanceSnapshot rows for all active VAs (last 24h)",
+    endpoint: "/api/cron/va-snapshot",
+    method: "GET",
+    category: "cron",
+  },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {

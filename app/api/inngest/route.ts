@@ -16,6 +16,8 @@ import { vaDailyPost } from "@/inngest/functions/va-daily-post";
 import { mondaySummary } from "@/inngest/functions/monday-summary";
 import { brainScan } from "@/inngest/functions/brain-scan";
 import { playbookRebuild } from "@/inngest/functions/playbook-rebuild";
+import { vaPersonalizedNudges } from "@/inngest/functions/va-personalized-nudges";
+import { vaSnapshotDaily, vaSnapshotWeekly } from "@/inngest/functions/va-snapshot";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -33,5 +35,8 @@ export const { GET, POST, PUT } = serve({
     mondaySummary,
     brainScan,
     playbookRebuild,
+    vaPersonalizedNudges,
+    vaSnapshotDaily,
+    vaSnapshotWeekly,
   ],
 });
