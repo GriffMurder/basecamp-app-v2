@@ -17,6 +17,7 @@ import { formatDistanceToNow, differenceInMinutes } from "date-fns";
 import {
   MessageSquare, AlertTriangle, CheckCircle, Clock, ShieldAlert, ExternalLink,
 } from "lucide-react";
+import { ResolveButton } from "./resolve-button";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -287,14 +288,14 @@ export default async function ThreadsPage({
 
                   {/* Actions */}
                   <td className="px-3 py-2.5">
-                    {t.resolved_at ? (
-                      <span className="text-xs text-emerald-600 flex items-center gap-0.5">
-                        <CheckCircle className="w-3 h-3" />
-                        {t.resolved_by ?? "Resolved"}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-gray-400">—</span>
-                    )}
+                    <div className="flex flex-col gap-0.5">
+                      <ResolveButton threadId={t.id} isResolved={!!t.resolved_at} />
+                      {t.resolved_at && t.resolved_by && (
+                        <span className="text-xs text-gray-400 truncate max-w-[100px]" title={t.resolved_by}>
+                          by {t.resolved_by.split("@")[0]}
+                        </span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

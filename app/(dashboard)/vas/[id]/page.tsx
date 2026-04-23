@@ -9,6 +9,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { vaUuid } from "@/lib/uuid5";
+import { RebuildSnapshotButton } from "./rebuild-snapshot-button";
 
 export const dynamic = "force-dynamic";
 
@@ -94,7 +95,7 @@ export default async function VaDetailPage({
         <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-lg shrink-0">
           {initials}
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Users className="w-5 h-5 text-blue-500" />
             {va.display_name}
@@ -111,6 +112,9 @@ export default async function VaDetailPage({
               <Badge variant="warning">Throttled: {throttle}</Badge>
             )}
           </div>
+        </div>
+        <div className="shrink-0">
+          <RebuildSnapshotButton vaId={va.id} />
         </div>
       </div>
 

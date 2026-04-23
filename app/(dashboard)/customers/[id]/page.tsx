@@ -9,6 +9,7 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
+import { RebuildPlaybookButton } from "./rebuild-playbook-button";
 
 export const dynamic = "force-dynamic";
 
@@ -119,6 +120,9 @@ export default async function CustomerDetailPage({
               <Badge variant="info">Slack</Badge>
             )}
           </div>
+        </div>
+        <div className="shrink-0 pt-1">
+          <RebuildPlaybookButton customerId={customer.id} />
         </div>
       </div>
 
