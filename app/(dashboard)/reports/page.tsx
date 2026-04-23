@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { FileText } from "lucide-react";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -116,7 +117,9 @@ export default async function ReportsPage({
               {reports.map((r) => (
                 <tr key={r.id} className="hover:bg-gray-50">
                   <td className="px-4 py-2.5 font-mono text-xs text-gray-600 max-w-[180px] truncate">
-                    {r.basecamp_thread_id}
+                    <Link href={`/reports/${r.id}`} className="text-blue-600 hover:underline">
+                      {r.basecamp_thread_id}
+                    </Link>
                   </td>
                   <td className="px-4 py-2.5 text-gray-700 capitalize">{r.task_type}</td>
                   <td className="px-4 py-2.5">

@@ -20,6 +20,9 @@ import { vaPersonalizedNudges } from "@/inngest/functions/va-personalized-nudges
 import { vaSnapshotDaily, vaSnapshotWeekly } from "@/inngest/functions/va-snapshot";
 import { escalationReping } from "@/inngest/functions/escalation-reping";
 import { founderAlerts } from "@/inngest/functions/founder-alerts";
+import { overdueMonitor } from "@/inngest/functions/overdue-monitor";
+import { responseNudges } from "@/inngest/functions/response-nudges";
+import { acsDraft } from "@/inngest/functions/acs-draft";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -42,5 +45,8 @@ export const { GET, POST, PUT } = serve({
     vaSnapshotWeekly,
     escalationReping,
     founderAlerts,
+    overdueMonitor,
+    responseNudges,
+    acsDraft,
   ],
 });

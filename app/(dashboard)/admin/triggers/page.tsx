@@ -163,6 +163,30 @@ const JOBS: Job[] = [
     method: "GET",
     category: "cron",
   },
+  {
+    id: "overdue-monitor",
+    label: "Overdue Monitor",
+    description: "Scan for overdue or due-soon todos; create Interventions and DM responsible VAs",
+    endpoint: "/api/cron/overdue-monitor",
+    method: "GET",
+    category: "cron",
+  },
+  {
+    id: "response-nudges",
+    label: "Response Nudges",
+    description: "Detect customer comments awaiting TB reply; send timed nudges to VA (15m), manager (60m), ops (90m)",
+    endpoint: "/api/cron/response-nudges",
+    method: "GET",
+    category: "cron",
+  },
+  {
+    id: "acs-draft",
+    label: "ACS Draft Generator",
+    description: "Auto-draft completion summaries for recently completed todos that have no report yet",
+    endpoint: "/api/cron/acs-draft",
+    method: "GET",
+    category: "cron",
+  },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {
