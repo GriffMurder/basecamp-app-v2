@@ -60,12 +60,12 @@ export async function GET(req: Request) {
           orderBy: { created_at: "desc" },
           select: {
             id: true,
-            task_type: true,
+            basecamp_todo_id: true,
+            basecamp_project_id: true,
+            title: true,
             status: true,
-            customer_id: true,
-            todo_id: true,
             created_at: true,
-            completed_at: true,
+            updated_at: true,
           },
         })
       : [],

@@ -80,15 +80,13 @@ export async function GET(req: Request) {
       orderBy: { display_name: "asc" },
       select: {
         id: true, display_name: true, email: true, active: true,
-        availability_status: true, current_load: true,
-        hard_cap: true, soft_cap: true, created_at: true,
+        reliability_score: true, capacity_index: true, created_at: true,
       },
     });
     csv = toCsv(rows.map((r) => ({
       ...r,
-      current_load: String(r.current_load ?? ""),
-      hard_cap: String(r.hard_cap ?? ""),
-      soft_cap: String(r.soft_cap ?? ""),
+      reliability_score: String(r.reliability_score ?? ""),
+      capacity_index: String(r.capacity_index ?? ""),
       created_at: r.created_at?.toISOString() ?? "",
     })));
     filename = "vas.csv";

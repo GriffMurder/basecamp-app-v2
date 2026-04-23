@@ -55,13 +55,12 @@ export async function POST() {
     for (const p of projects) {
       await prisma.clockifyProject.upsert({
         where: { clockify_project_id: p.id },
-        update: { name: p.name, is_archived: p.archived, last_synced_at: new Date() },
+        update: { name: p.name, archived: p.archived, synced_at: new Date() },
         create: {
           clockify_project_id: p.id,
           name: p.name,
-          workspace_id: workspaceId,
-          is_archived: p.archived,
-          last_synced_at: new Date(),
+          archived: p.archived,
+          synced_at: new Date(),
         },
       });
       projectsUpserted++;
@@ -76,12 +75,11 @@ export async function POST() {
     for (const t of tags) {
       await prisma.clockifyTag.upsert({
         where: { clockify_tag_id: t.id },
-        update: { name: t.name, is_archived: t.archived },
+        update: { name: t.name, archived: t.archived },
         create: {
           clockify_tag_id: t.id,
           name: t.name,
-          workspace_id: workspaceId,
-          is_archived: t.archived,
+          archived: t.archived,
         },
       });
       tagsUpserted++;
