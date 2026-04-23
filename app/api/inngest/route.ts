@@ -9,6 +9,8 @@ import { dailyScoring } from "@/inngest/functions/daily-scoring";
 import { syncBasecampPeople } from "@/inngest/functions/sync-basecamp-people";
 import { vaWeeklyMetrics } from "@/inngest/functions/va-weekly-metrics";
 import { opsWeeklyBrief } from "@/inngest/functions/ops-weekly-brief";
+import { tbOpsDailyDigest, tbOpsWeeklyDigest } from "@/inngest/functions/tb-ops-digest";
+import { vaBurnoutAlerts } from "@/inngest/functions/va-burnout-alerts";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -18,5 +20,8 @@ export const { GET, POST, PUT } = serve({
     syncBasecampPeople,
     vaWeeklyMetrics,
     opsWeeklyBrief,
+    tbOpsDailyDigest,
+    tbOpsWeeklyDigest,
+    vaBurnoutAlerts,
   ],
 });
