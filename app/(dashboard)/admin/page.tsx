@@ -65,6 +65,12 @@ const sections = [
     label: "Data Integrity Monitor",
     description: "Lifecycle anomalies: stuck tasks, stale in-progress, orphan assignments",
   },
+  {
+    href: "/admin/scores",
+    icon: BarChart2,
+    label: "Scores & Health",
+    description: "System health status, VA reliability & capacity, client health & difficulty scores",
+  },
 ];
 
 export default async function AdminPage() {

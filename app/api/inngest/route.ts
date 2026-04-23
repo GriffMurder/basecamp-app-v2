@@ -23,6 +23,9 @@ import { founderAlerts } from "@/inngest/functions/founder-alerts";
 import { overdueMonitor } from "@/inngest/functions/overdue-monitor";
 import { responseNudges } from "@/inngest/functions/response-nudges";
 import { acsDraft } from "@/inngest/functions/acs-draft";
+import { scoreCompute } from "@/inngest/functions/score-compute";
+import { tierCompute } from "@/inngest/functions/tier-compute";
+import { systemHeartbeat } from "@/inngest/functions/system-heartbeat";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -48,5 +51,8 @@ export const { GET, POST, PUT } = serve({
     overdueMonitor,
     responseNudges,
     acsDraft,
+    scoreCompute,
+    tierCompute,
+    systemHeartbeat,
   ],
 });

@@ -187,6 +187,30 @@ const JOBS: Job[] = [
     method: "GET",
     category: "cron",
   },
+  {
+    id: "score-compute",
+    label: "Full Score Compute",
+    description: "Compute VA reliability, capacity index, client health & difficulty scores",
+    endpoint: "/api/cron/score-compute",
+    method: "GET",
+    category: "cron",
+  },
+  {
+    id: "tier-compute",
+    label: "Tier Auto-Compute",
+    description: "Recompute effective tier (A/B/C) for all active customers",
+    endpoint: "/api/cron/tier-compute",
+    method: "GET",
+    category: "cron",
+  },
+  {
+    id: "system-heartbeat",
+    label: "System Heartbeat",
+    description: "Run a DB health check and DM founder if degraded/down",
+    endpoint: "/api/cron/system-heartbeat",
+    method: "GET",
+    category: "cron",
+  },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {
