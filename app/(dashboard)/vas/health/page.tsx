@@ -2,11 +2,11 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Activity, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { Decimal } from "@prisma/client/runtime/library";
 
 export const dynamic = "force-dynamic";
 
-function toNum(v: Decimal | null | undefined): number | null {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toNum(v: any): number | null {
   return v == null ? null : Number(v);
 }
 
