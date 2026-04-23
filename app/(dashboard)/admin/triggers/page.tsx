@@ -107,6 +107,30 @@ const JOBS: Job[] = [
     method: "GET",
     category: "cron",
   },
+  {
+    id: "monday-summary",
+    label: "Monday Weekly Summary",
+    description: "Posts weekly ops summary to OPS_CHANNEL_ID: at-risk clients, quality signals, VA leaderboard",
+    endpoint: "/api/cron/monday-summary",
+    method: "GET",
+    category: "cron",
+  },
+  {
+    id: "brain-scan",
+    label: "Brain Scan",
+    description: "AI-generates job cards for unassigned todos and posts them to JOB_BOARD_CHANNEL_ID",
+    endpoint: "/api/cron/brain-scan",
+    method: "GET",
+    category: "cron",
+  },
+  {
+    id: "playbook-rebuild",
+    label: "Client Playbook Rebuild",
+    description: "Rebuilds ClientPlaybook records for all active clients from quality events + completion reports",
+    endpoint: "/api/cron/playbook-rebuild",
+    method: "GET",
+    category: "cron",
+  },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {

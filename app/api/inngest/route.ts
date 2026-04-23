@@ -13,6 +13,9 @@ import { tbOpsDailyDigest, tbOpsWeeklyDigest } from "@/inngest/functions/tb-ops-
 import { vaBurnoutAlerts } from "@/inngest/functions/va-burnout-alerts";
 import { dimScan } from "@/inngest/functions/dim-scan";
 import { vaDailyPost } from "@/inngest/functions/va-daily-post";
+import { mondaySummary } from "@/inngest/functions/monday-summary";
+import { brainScan } from "@/inngest/functions/brain-scan";
+import { playbookRebuild } from "@/inngest/functions/playbook-rebuild";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -27,5 +30,8 @@ export const { GET, POST, PUT } = serve({
     vaBurnoutAlerts,
     dimScan,
     vaDailyPost,
+    mondaySummary,
+    brainScan,
+    playbookRebuild,
   ],
 });
