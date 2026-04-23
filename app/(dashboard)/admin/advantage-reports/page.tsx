@@ -2,6 +2,7 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { TrendingUp, Users, Building2, FileText } from "lucide-react";
 import Link from "next/link";
+import { ReportRowActions } from "./row-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -123,7 +124,7 @@ export default async function AdvantageReportsPage() {
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b">
                     <tr>
-                      {["Client", "Tasks", "Turnaround", "FPQ Rate", "Praise", "Revisions", "Payroll Avoided", "Headline", "AI"].map((h) => (
+                      {["Client", "Tasks", "Turnaround", "FPQ Rate", "Praise", "Revisions", "Payroll Avoided", "Headline", "AI", "Status", ""].map((h) => (
                         <th key={h} className="px-3 py-2 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">
                           {h}
                         </th>
@@ -137,7 +138,9 @@ export default async function AdvantageReportsPage() {
                       return (
                         <tr key={r.id} className="hover:bg-gray-50">
                           <td className="px-3 py-2.5 font-medium text-gray-900 max-w-[150px] truncate">
-                            {m?.customer_name ?? "—"}
+                            <Link href={`/admin/advantage-reports/${r.id}`} className="hover:text-blue-600">
+                              {m?.customer_name ?? "—"}
+                            </Link>
                           </td>
                           <td className="px-3 py-2.5 text-gray-600">{m?.tasks_completed ?? "—"}</td>
                           <td className="px-3 py-2.5 text-gray-600">
@@ -179,6 +182,21 @@ export default async function AdvantageReportsPage() {
                               <span className="text-xs text-gray-400">FB</span>
                             )}
                           </td>
+                          <td className="px-3 py-2.5">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              r.status === "sent"     ? "bg-emerald-100 text-emerald-700"
+                              : r.status === "rendered" ? "bg-amber-100 text-amber-700"
+                              : r.status === "failed"   ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-600"
+                            }`}>
+                              {r.status}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2.5">
+                            {r.status !== "sent" && (
+                              <ReportRowActions reportId={r.id} status={r.status} />
+                            )}
+                          </td>
                         </tr>
                       );
                     })}
@@ -197,7 +215,7 @@ export default async function AdvantageReportsPage() {
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b">
                     <tr>
-                      {["VA", "Tasks", "Turnaround", "Revision Rate", "Praise", "Stability", "Throttle Days", "Headline", "AI"].map((h) => (
+                      {["VA", "Tasks", "Turnaround", "Revision Rate", "Praise", "Stability", "Throttle Days", "Headline", "AI", "Status", ""].map((h) => (
                         <th key={h} className="px-3 py-2 text-left text-xs font-semibold text-gray-500 whitespace-nowrap">
                           {h}
                         </th>
@@ -211,7 +229,9 @@ export default async function AdvantageReportsPage() {
                       return (
                         <tr key={r.id} className="hover:bg-gray-50">
                           <td className="px-3 py-2.5 font-medium text-gray-900 max-w-[140px] truncate">
-                            {m?.va_name ?? "—"}
+                            <Link href={`/admin/advantage-reports/${r.id}`} className="hover:text-blue-600">
+                              {m?.va_name ?? "—"}
+                            </Link>
                           </td>
                           <td className="px-3 py-2.5 text-gray-600">{m?.tasks_completed ?? "—"}</td>
                           <td className="px-3 py-2.5 text-gray-600">
@@ -255,6 +275,21 @@ export default async function AdvantageReportsPage() {
                               <span className="text-xs font-medium text-blue-500">AI</span>
                             ) : (
                               <span className="text-xs text-gray-400">FB</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2.5">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              r.status === "sent"     ? "bg-emerald-100 text-emerald-700"
+                              : r.status === "rendered" ? "bg-amber-100 text-amber-700"
+                              : r.status === "failed"   ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-600"
+                            }`}>
+                              {r.status}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2.5">
+                            {r.status !== "sent" && (
+                              <ReportRowActions reportId={r.id} status={r.status} />
                             )}
                           </td>
                         </tr>
