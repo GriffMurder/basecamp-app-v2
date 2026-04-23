@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import Link from "next/link";
-import { Users, Building2, Settings } from "lucide-react";
+import { Users, Building2, Mail, Settings } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +16,12 @@ const sections = [
     icon: Building2,
     label: "Organizations",
     description: "Manage multi-tenant organizations and their slugs",
+  },
+  {
+    href: "/admin/email-routing",
+    icon: Mail,
+    label: "Email Routing",
+    description: "Manage Cloudflare email forwarding destinations and rules",
   },
 ];
 
