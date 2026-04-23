@@ -3,7 +3,6 @@ import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 export default defineConfig({
-  earlyAccess: true,
   schema: "prisma/schema.prisma",
   migrate: {
     async adapter(env: NodeJS.ProcessEnv) {
