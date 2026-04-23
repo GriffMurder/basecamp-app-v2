@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { AssignRecommender } from "./assign-recommender";
-import { CheckSquare, ArrowLeft, Clock, Calendar, User, AlertCircle } from "lucide-react";
+import { CheckSquare, ArrowLeft, Clock, Calendar, User, AlertCircle, ClipboardList, ShieldAlert } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +25,18 @@ export default async function TodoDetailPage({
 
   const now = new Date();
   const isOverdue = !todo.completed && todo.due_on && todo.due_on < now;
+
+  // Fetch hygiene gate thread data
+  const threadActivity = await prisma.basecampThreadActivity.findFirst({
+    where: { basecamp_todo_id: todo.basecamp_todo_id },
+    select: {
+      hygiene_dm_status: true,
+      hygiene_dm_count: true,
+      hygiene_dm_last_sent_at: true,
+      last_comment_author_is_internal: true,
+      last_tb_reply_at: true,
+    },
+  });
 
   // Fetch related interventions
   const interventions = await prisma.intervention.findMany({
@@ -197,6 +209,76 @@ export default async function TodoDetailPage({
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Intake Gate State */}
+      {todo.intake_state && (
+        <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+            <ClipboardList className="w-4 h-4 text-amber-500" />
+            <h2 className="text-sm font-semibold text-gray-700">Intake Gate</h2>
+          </div>
+          <div className="px-4 py-3 grid grid-cols-3 gap-4 text-xs">
+            <div>
+              <p className="text-gray-400 uppercase tracking-wide font-semibold mb-1">State</p>
+              <span className={`px-2 py-0.5 rounded-full font-medium ${
+                todo.intake_state === "placeholder_confirmed" ? "bg-gray-100 text-gray-600"
+                : todo.intake_state === "awaiting_details" ? "bg-blue-100 text-blue-700"
+                : todo.intake_state === "awaiting_placeholder_confirmation" ? "bg-amber-100 text-amber-700"
+                : "bg-emerald-100 text-emerald-700"
+              }`}>
+                {todo.intake_state.replace(/_/g, " ")}
+              </span>
+            </div>
+            <div>
+              <p className="text-gray-400 uppercase tracking-wide font-semibold mb-1">Pings</p>
+              <span className="text-gray-700">{todo.intake_ping_count ?? 0}</span>
+            </div>
+            <div>
+              <p className="text-gray-400 uppercase tracking-wide font-semibold mb-1">Last Ping</p>
+              <span className="text-gray-700">
+                {todo.intake_last_ping_at
+                  ? new Date(todo.intake_last_ping_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                  : "—"}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hygiene Gate State */}
+      {threadActivity?.hygiene_dm_status && threadActivity.hygiene_dm_status !== "pending" && (
+        <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-purple-500" />
+            <h2 className="text-sm font-semibold text-gray-700">Hygiene Gate</h2>
+          </div>
+          <div className="px-4 py-3 grid grid-cols-3 gap-4 text-xs">
+            <div>
+              <p className="text-gray-400 uppercase tracking-wide font-semibold mb-1">DM Status</p>
+              <span className={`px-2 py-0.5 rounded-full font-medium ${
+                threadActivity.hygiene_dm_status === "completed" ? "bg-emerald-100 text-emerald-700"
+                : threadActivity.hygiene_dm_status === "escalated" ? "bg-red-100 text-red-700"
+                : threadActivity.hygiene_dm_status === "suppressed" ? "bg-gray-100 text-gray-600"
+                : "bg-purple-100 text-purple-700"
+              }`}>
+                {threadActivity.hygiene_dm_status}
+              </span>
+            </div>
+            <div>
+              <p className="text-gray-400 uppercase tracking-wide font-semibold mb-1">DMs Sent</p>
+              <span className="text-gray-700">{threadActivity.hygiene_dm_count ?? 0}</span>
+            </div>
+            <div>
+              <p className="text-gray-400 uppercase tracking-wide font-semibold mb-1">Last DM</p>
+              <span className="text-gray-700">
+                {threadActivity.hygiene_dm_last_sent_at
+                  ? new Date(threadActivity.hygiene_dm_last_sent_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                  : "—"}
+              </span>
+            </div>
           </div>
         </div>
       )}

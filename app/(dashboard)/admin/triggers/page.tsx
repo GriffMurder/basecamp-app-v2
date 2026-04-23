@@ -283,10 +283,19 @@ const JOBS: Job[] = [
     method: "GET",
     category: "cron",
   },
-];
+    {
+      id: "intake-gate-scan",
+      label: "Intake Gate Scan",
+      description: "Evaluate unassigned todos against the intake gate — post placeholder/detail prompts on Basecamp as needed",
+      endpoint: "/api/cron/intake-gate-scan",
+      method: "POST",
+      category: "cron",
+    },
+  ];
 
 const CATEGORY_LABELS: Record<string, string> = {
-  cron: "Scheduled / Cron Jobs",
+  cron: "Scheduled Jobs",
+  inngest: "Inngest Functions",
   admin: "Admin Actions",
 };
 

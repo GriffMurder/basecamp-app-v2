@@ -35,6 +35,7 @@ import { advantageReportBuilder } from "@/inngest/functions/advantage-report-bui
 import { sentimentScan } from "@/inngest/functions/sentiment-scan";
 import { acsPost } from "@/inngest/functions/acs-post";
 import { advantageReportSender } from "@/inngest/functions/advantage-report-sender";
+import { intakeGateScan } from "@/inngest/functions/intake-gate-scan";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -72,5 +73,6 @@ export const { GET, POST, PUT } = serve({
     sentimentScan,
     acsPost,
     advantageReportSender,
+    intakeGateScan,
   ],
 });
