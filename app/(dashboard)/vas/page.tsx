@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { Users } from "lucide-react";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +79,11 @@ export default async function VasPage() {
             )}
             {vas.map((v) => (
               <tr key={v.id} className="hover:bg-gray-50">
-                <td className="px-4 py-2.5 font-medium text-gray-900">{v.display_name}</td>
+                <td className="px-4 py-2.5 font-medium text-gray-900">
+                  <Link href={`/vas/${v.id}`} className="hover:text-blue-600 hover:underline">
+                    {v.display_name}
+                  </Link>
+                </td>
                 <td className="px-4 py-2.5 text-gray-500 text-xs">{v.email ?? "—"}</td>
                 <td className="px-4 py-2.5 text-center">
                   {v.reliability_score != null ? (
