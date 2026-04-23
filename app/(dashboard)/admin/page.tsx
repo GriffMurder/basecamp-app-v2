@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import Link from "next/link";
-import { Users, Building2, Mail, Clock, BarChart2, CreditCard, Settings, AlertTriangle } from "lucide-react";
+import { Users, Building2, Mail, Clock, BarChart2, CreditCard, Settings, AlertTriangle, Zap } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +52,12 @@ const sections = [
     icon: AlertTriangle,
     label: "Escalations",
     description: "Open VA, manager, and founder-level intervention queue",
+  },
+  {
+    href: "/admin/triggers",
+    icon: Zap,
+    label: "Manual Triggers",
+    description: "Fire scheduled jobs and admin actions on demand",
   },
 ];
 

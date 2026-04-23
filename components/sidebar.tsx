@@ -22,6 +22,7 @@ const links = [
   { href: "/buckets", label: "Buckets", icon: DollarSign },
   { href: "/approvals", label: "Approvals", icon: ThumbsUp },
   { href: "/quality", label: "Quality Signals", icon: AlertTriangle },
+  { href: "/plans", label: "Success Plans", icon: FileText },
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/time-tracking", label: "Time Tracking", icon: Clock },
   { href: "/insights", label: "Insights", icon: BarChart2 },
