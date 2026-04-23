@@ -18,6 +18,8 @@ import { brainScan } from "@/inngest/functions/brain-scan";
 import { playbookRebuild } from "@/inngest/functions/playbook-rebuild";
 import { vaPersonalizedNudges } from "@/inngest/functions/va-personalized-nudges";
 import { vaSnapshotDaily, vaSnapshotWeekly } from "@/inngest/functions/va-snapshot";
+import { escalationReping } from "@/inngest/functions/escalation-reping";
+import { founderAlerts } from "@/inngest/functions/founder-alerts";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -38,5 +40,7 @@ export const { GET, POST, PUT } = serve({
     vaPersonalizedNudges,
     vaSnapshotDaily,
     vaSnapshotWeekly,
+    escalationReping,
+    founderAlerts,
   ],
 });

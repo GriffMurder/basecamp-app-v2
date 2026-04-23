@@ -147,6 +147,22 @@ const JOBS: Job[] = [
     method: "GET",
     category: "cron",
   },
+  {
+    id: "escalation-reping",
+    label: "Escalation Re-ping",
+    description: "Re-pings stale manager escalations (>24h open); auto-escalates to founder after 48h",
+    endpoint: "/api/cron/escalation-reping",
+    method: "GET",
+    category: "cron",
+  },
+  {
+    id: "founder-alerts",
+    label: "Founder Pattern Alerts",
+    description: "Evaluates active managers for systemic patterns (SLA breaches, open escalations, at-risk clients) and DMs founder",
+    endpoint: "/api/cron/founder-alerts",
+    method: "GET",
+    category: "cron",
+  },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {

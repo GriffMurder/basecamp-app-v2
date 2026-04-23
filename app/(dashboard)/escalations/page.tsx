@@ -251,6 +251,12 @@ export default function EscalationsPage() {
                               Resolve
                             </button>
                           ) : null}
+                          <Link
+                            href={`/escalations/${ivn.id}`}
+                            className="px-2.5 py-1 text-xs border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50"
+                          >
+                            View
+                          </Link>
                           <button
                             onClick={() => setExpanded((e) => ({ ...e, [ivn.id]: !e[ivn.id] }))}
                             className="p-1 text-gray-400 hover:text-gray-600"
