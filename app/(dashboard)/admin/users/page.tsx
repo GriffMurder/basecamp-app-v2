@@ -3,11 +3,19 @@ import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { Settings, Users, UserCheck, UserX } from "lucide-react";
+import { ApproveButtons, ScrollToUser } from "./approve-buttons";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminUsersPage() {
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ approve?: string }>;
+}) {
   await requireRole(["super_admin", "owner"]);
+
+  const { approve } = await searchParams;
+  const approveId = approve ? parseInt(approve, 10) : null;
 
   const users = await prisma.dashboardUser.findMany({
     orderBy: [{ role: "asc" }, { display_name: "asc" }],
@@ -34,6 +42,9 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-5">
+      {/* Scroll to highlighted user when coming from ?approve= deep-link */}
+      {approveId && !isNaN(approveId) && <ScrollToUser userId={approveId} />}
+
       <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
         <Settings className="w-6 h-6 text-blue-500" />
         User Management
@@ -66,7 +77,7 @@ export default async function AdminUsersPage() {
               </thead>
               <tbody className="divide-y divide-amber-100">
                 {users.filter(u => u.role === "pending").map((u) => (
-                  <tr key={u.id} className="bg-white hover:bg-amber-50">
+                  <tr key={u.id} id={`user-row-${u.id}`} className="bg-white hover:bg-amber-50 transition-colors">
                     <td className="px-4 py-2.5 font-mono text-xs text-gray-700">{u.email}</td>
                     <td className="px-4 py-2.5 text-gray-900">{u.display_name || "—"}</td>
                     <td className="px-4 py-2.5 text-xs text-gray-500">
@@ -128,37 +139,6 @@ export default async function AdminUsersPage() {
           </table>
         </div>
       </div>
-    </div>
-  );
-}
-
-// Minimal approve buttons — client component for interactivity
-function ApproveButtons({ userId }: { userId: number }) {
-  return (
-    <div className="flex gap-1 justify-end">
-      <form action={`/api/users`} method="POST">
-        <input type="hidden" name="userId" value={userId} />
-        <input type="hidden" name="role" value="manager" />
-        <button type="submit"
-          className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
-          Manager
-        </button>
-      </form>
-      <form action={`/api/users`} method="POST">
-        <input type="hidden" name="userId" value={userId} />
-        <input type="hidden" name="role" value="va" />
-        <button type="submit"
-          className="px-2 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700">
-          VA
-        </button>
-      </form>
-      <form action={`/api/users/${userId}`} method="POST">
-        <input type="hidden" name="_method" value="DELETE" />
-        <button type="submit"
-          className="px-2 py-1 text-xs bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100">
-          Reject
-        </button>
-      </form>
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle, Clock, Users, Building2, TrendingUp } from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, Users, Building2, TrendingUp, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +17,7 @@ async function getCommandCenterData(session: Awaited<ReturnType<typeof requireAu
     hoursToday,
     pendingApprovals,
     pendingUsers,
+    topOverdueTodos,
     atRiskClients,
     openInterventions,
   ] = await Promise.allSettled([
@@ -56,6 +57,13 @@ async function getCommandCenterData(session: Awaited<ReturnType<typeof requireAu
           select: { id: true, email: true, display_name: true, created_at: true },
         })
       : Promise.resolve([]),
+    // Top overdue todos for inline dashboard preview
+    prisma.basecampTodo.findMany({
+      where: { completed: false, due_on: { lt: new Date() } },
+      orderBy: { due_on: "asc" },
+      take: 5,
+      select: { id: true, title: true, due_on: true, assignee_name: true },
+    }),
     // At-risk clients (open escalations)
     prisma.customer.findMany({
       where: { active: true },
@@ -83,13 +91,14 @@ async function getCommandCenterData(session: Awaited<ReturnType<typeof requireAu
     },
     pendingUsers: pendingUsers.status === "fulfilled" ? pendingUsers.value : [],
     clients: atRiskClients.status === "fulfilled" ? atRiskClients.value : [],
+    topOverdueTodos: topOverdueTodos.status === "fulfilled" ? topOverdueTodos.value : [],
     role,
   };
 }
 
 export default async function DashboardPage() {
   const session = await requireAuth();
-  const { kpis, pendingUsers, clients, role } = await getCommandCenterData(session);
+  const { kpis, pendingUsers, clients, topOverdueTodos, role } = await getCommandCenterData(session);
   const user = session.user as { email?: string; name?: string; role?: string };
 
   const healthVariant = kpis.healthScore >= 80 ? "success" : kpis.healthScore >= 60 ? "warning" : "danger";
@@ -125,13 +134,39 @@ export default async function DashboardPage() {
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Action Required</p>
           {kpis.overdueTodos > 0 && (
-            <Link href="/todos?overdue=1" className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-lg px-4 py-3 hover:bg-red-100 transition-colors">
-              <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-red-800">{kpis.overdueTodos} overdue task{kpis.overdueTodos !== 1 ? "s" : ""}</p>
-                <p className="text-xs text-red-600">Tasks past their due date with no completion</p>
-              </div>
-            </Link>
+            <div className="bg-red-50 border border-red-200 rounded-lg overflow-hidden">
+              <Link href="/todos?overdue=1" className="flex items-center gap-3 px-4 py-3 hover:bg-red-100 transition-colors">
+                <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-red-800">{kpis.overdueTodos} overdue task{kpis.overdueTodos !== 1 ? "s" : ""}</p>
+                  <p className="text-xs text-red-600">Tasks past their due date with no completion</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-red-400 shrink-0" />
+              </Link>
+              {topOverdueTodos.length > 0 && (
+                <div className="divide-y divide-red-100 border-t border-red-100">
+                  {topOverdueTodos.map((t) => (
+                    <Link
+                      key={t.id}
+                      href={`/todos/${t.id}`}
+                      className="flex items-center justify-between px-4 py-2 hover:bg-red-100 transition-colors"
+                    >
+                      <span className="text-xs text-gray-800 truncate max-w-xs">{t.title ?? "(Untitled)"}</span>
+                      <div className="flex items-center gap-2 ml-2 shrink-0">
+                        {t.assignee_name && (
+                          <span className="text-xs text-gray-400">{t.assignee_name}</span>
+                        )}
+                        <span className="text-xs text-red-500 font-medium">
+                          {t.due_on
+                            ? new Date(t.due_on).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                            : "No date"}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
           {kpis.openInterventions > 0 && (
             <Link href="/insights" className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 hover:bg-amber-100 transition-colors">
