@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import Link from "next/link";
-import { Users, Building2, Mail, Settings } from "lucide-react";
+import { Users, Building2, Mail, Clock, Settings } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +22,12 @@ const sections = [
     icon: Mail,
     label: "Email Routing",
     description: "Manage Cloudflare email forwarding destinations and rules",
+  },
+  {
+    href: "/admin/clockify",
+    icon: Clock,
+    label: "Clockify Sync",
+    description: "Monitor sync health, trigger incremental or full imports",
   },
 ];
 

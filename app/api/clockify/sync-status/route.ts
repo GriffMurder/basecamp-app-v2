@@ -37,5 +37,14 @@ export async function GET() {
     ok: true,
     entity_counts: { projects, tags, tasks },
     recent_syncs: logs,
+    // aliases used by admin/clockify UI
+    sync_logs: logs.map((l) => ({
+      entity_type: l.entity_type,
+      last_synced_at: l.last_synced_at?.toISOString() ?? null,
+      entries_synced: l.entries_synced,
+      status: l.status,
+      error: l.error,
+    })),
+    counts: { projects, tags, tasks },
   });
 }
