@@ -27,3 +27,4 @@ migration-data.sql
 .DS_Store
 *.pem
 .vercel
+.vercel

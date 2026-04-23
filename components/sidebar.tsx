@@ -5,6 +5,7 @@ import { cn } from "@/lib/cn";
 import {
   LayoutDashboard, Users, CheckSquare, Building2,
   BarChart2, Settings, LogOut, Briefcase, Cog, FileText,
+  Clock, Shield, UserCircle,
 } from "lucide-react";
 
 const links = [
@@ -14,7 +15,9 @@ const links = [
   { href: "/vas", label: "Team", icon: Users },
   { href: "/ops", label: "Operations", icon: Cog },
   { href: "/reports", label: "Reports", icon: FileText },
+  { href: "/time-tracking", label: "Time Tracking", icon: Clock },
   { href: "/insights", label: "Insights", icon: BarChart2 },
+  { href: "/audit", label: "Audit Log", icon: Shield },
   { href: "/admin", label: "Admin", icon: Settings },
 ];
 
@@ -46,7 +49,19 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="px-2 pb-4">
+      <div className="px-2 pb-4 space-y-0.5">
+        <Link
+          href="/profile"
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+            pathname === "/profile"
+              ? "bg-blue-600 text-white"
+              : "text-gray-400 hover:bg-gray-800 hover:text-white"
+          )}
+        >
+          <UserCircle className="w-4 h-4 shrink-0" />
+          Profile
+        </Link>
         <form action="/api/auth/signout" method="POST">
           <button
             type="submit"
