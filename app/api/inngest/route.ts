@@ -12,6 +12,7 @@ import { opsWeeklyBrief } from "@/inngest/functions/ops-weekly-brief";
 import { tbOpsDailyDigest, tbOpsWeeklyDigest } from "@/inngest/functions/tb-ops-digest";
 import { vaBurnoutAlerts } from "@/inngest/functions/va-burnout-alerts";
 import { dimScan } from "@/inngest/functions/dim-scan";
+import { vaDailyPost } from "@/inngest/functions/va-daily-post";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -25,5 +26,6 @@ export const { GET, POST, PUT } = serve({
     tbOpsWeeklyDigest,
     vaBurnoutAlerts,
     dimScan,
+    vaDailyPost,
   ],
 });

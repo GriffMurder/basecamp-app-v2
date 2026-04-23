@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { KpiCard } from "@/components/ui/kpi-card";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Building2, ArrowLeft } from "lucide-react";
+import { Building2, ArrowLeft, BookOpen, CheckCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +24,7 @@ export default async function CustomerDetailPage({
   if (!customer) notFound();
 
   const now = new Date();
-  const [openTodos, overdueTodos, openInterventions, buckets] = await Promise.all([
+  const [openTodos, overdueTodos, openInterventions, buckets, playbook] = await Promise.all([
     prisma.basecampTodo.count({
       where: { basecamp_project_id: customer.basecamp_project_id ?? "__none__", completed: false },
     }),
@@ -42,6 +42,11 @@ export default async function CustomerDetailPage({
       take: 5,
       select: { id: true, hours_purchased: true, hours_used: true, hours_balance: true, purchased_at: true, status: true },
     }),
+    // ClientPlaybook uses client_id (UUID) from customer.uuid_id or string id mapping
+    // Try by string id — if customer has a uuid field use that; fall back gracefully
+    prisma.clientPlaybook.findFirst({
+      where: { client_id: String(id) },
+    }).catch(() => null),
   ]);
 
   return (
@@ -147,6 +152,50 @@ export default async function CustomerDetailPage({
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Client Playbook */}
+      {playbook && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-blue-500" />
+              <h2 className="text-sm font-semibold text-gray-900">Client Playbook</h2>
+            </div>
+            {playbook.last_built_at && (
+              <span className="text-xs text-gray-400">
+                Updated {new Date(playbook.last_built_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </span>
+            )}
+          </div>
+          <div className="p-5 space-y-4">
+            {/* Top Rules */}
+            {Array.isArray(playbook.top_rules) && (playbook.top_rules as unknown[]).length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Top Rules</p>
+                <ul className="space-y-1.5">
+                  {(playbook.top_rules as unknown[]).map((rule, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                      <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <span>{typeof rule === "string" ? rule : JSON.stringify(rule)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {/* Signals */}
+            {playbook.signals_json &&
+              typeof playbook.signals_json === "object" &&
+              Object.keys(playbook.signals_json as object).length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Signals</p>
+                <pre className="text-xs bg-gray-50 rounded p-3 overflow-auto max-h-40 text-gray-700">
+                  {JSON.stringify(playbook.signals_json, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

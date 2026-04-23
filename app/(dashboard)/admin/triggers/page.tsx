@@ -99,6 +99,14 @@ const JOBS: Job[] = [
     method: "GET",
     category: "cron",
   },
+  {
+    id: "va-daily-post",
+    label: "VA Daily Post",
+    description: "Sends the daily broadcast to OPEN_TASKS_CHANNEL_ID with tips + yesterday's pulse",
+    endpoint: "/api/cron/va-daily-post",
+    method: "GET",
+    category: "cron",
+  },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {
