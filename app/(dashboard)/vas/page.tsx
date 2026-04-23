@@ -2,23 +2,34 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import { KpiCard } from "@/components/ui/kpi-card";
-import { Users } from "lucide-react";
+import { Users, Search } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default async function VasPage() {
+export default async function VasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; inactive?: string }>;
+}) {
   await requireAuth();
+
+  const { q: rawQ, inactive } = await searchParams;
+  const q = rawQ ?? "";
+  const showInactive = inactive === "1";
 
   const [vas, avgScore] = await Promise.all([
     prisma.va.findMany({
-      where: { active: true },
+      where: {
+        active: showInactive ? undefined : true,
+        ...(q ? { display_name: { contains: q, mode: "insensitive" } } : {}),
+      },
       orderBy: { display_name: "asc" },
       select: {
         id: true, display_name: true, email: true,
         slack_user_id: true, basecamp_person_id: true,
         reliability_score: true, capacity_index: true, last_scored_at: true,
-        created_at: true,
+        created_at: true, active: true,
       },
     }),
     prisma.va.aggregate({
@@ -40,10 +51,30 @@ export default async function VasPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-5">
-      <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-        <Users className="w-6 h-6 text-blue-500" />
-        Team
-      </h1>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Users className="w-6 h-6 text-blue-500" />
+          Team
+        </h1>
+        <div className="flex items-center gap-2">
+          <form method="GET" className="relative flex items-center">
+            <Search className="absolute left-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+            <input
+              name="q"
+              defaultValue={q}
+              placeholder="Search VAs…"
+              className="pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 w-44"
+            />
+            {showInactive && <input type="hidden" name="inactive" value="1" />}
+          </form>
+          <Link
+            href={showInactive ? `/vas${q ? `?q=${encodeURIComponent(q)}` : ""}` : `/vas?inactive=1${q ? `&q=${encodeURIComponent(q)}` : ""}`}
+            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 whitespace-nowrap"
+          >
+            {showInactive ? "Active only" : "Show inactive"}
+          </Link>
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <KpiCard label="Active VAs" value={vas.length} variant="success" />
@@ -78,11 +109,12 @@ export default async function VasPage() {
               </tr>
             )}
             {vas.map((v) => (
-              <tr key={v.id} className="hover:bg-gray-50">
+              <tr key={v.id} className={`hover:bg-gray-50 ${!v.active ? "opacity-60" : ""}`}>
                 <td className="px-4 py-2.5 font-medium text-gray-900">
                   <Link href={`/vas/${v.id}`} className="hover:text-blue-600 hover:underline">
                     {v.display_name}
                   </Link>
+                  {!v.active && <span className="ml-1 text-xs text-gray-400">(inactive)</span>}
                 </td>
                 <td className="px-4 py-2.5 text-gray-500 text-xs">{v.email ?? "—"}</td>
                 <td className="px-4 py-2.5 text-center">

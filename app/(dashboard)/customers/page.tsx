@@ -10,12 +10,13 @@ export const dynamic = "force-dynamic";
 export default async function CustomersPage({
   searchParams,
 }: {
-  searchParams: { q?: string; inactive?: string };
+  searchParams: Promise<{ q?: string; inactive?: string }>;
 }) {
   await requireAuth();
 
-  const q = searchParams.q ?? "";
-  const showInactive = searchParams.inactive === "1";
+  const { q: rawQ, inactive } = await searchParams;
+  const q = rawQ ?? "";
+  const showInactive = inactive === "1";
 
   const customers = await prisma.customer.findMany({
     where: {

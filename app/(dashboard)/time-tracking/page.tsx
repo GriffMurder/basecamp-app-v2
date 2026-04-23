@@ -23,18 +23,19 @@ function statusVariant(status: string): "muted" | "warning" | "success" | "dange
 export default async function TimeTrackingPage({
   searchParams,
 }: {
-  searchParams: { status?: string; page?: string };
+  searchParams: Promise<{ status?: string; page?: string }>;
 }) {
   await requireAuth();
 
-  const filterStatus = searchParams.status ?? "";
-  const page = Math.max(1, parseInt(searchParams.page ?? "1"));
+  const { status, page: pageStr } = await searchParams;
+  const filterStatus = status ?? "";
+  const page = Math.max(1, parseInt(pageStr ?? "1"));
   const pageSize = 50;
 
   const where: Record<string, unknown> = {};
   if (filterStatus) where.status = filterStatus;
 
-  const [entries, total, kpis] = await Promise.all([
+  const [entries, total, kpis, allCustomers, allVas] = await Promise.all([
     prisma.timeEntry.findMany({
       where,
       take: pageSize,
@@ -60,7 +61,18 @@ export default async function TimeTrackingPage({
       _count: { id: true },
       _sum: { duration_minutes: true },
     }),
+    prisma.customer.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.va.findMany({
+      select: { id: true, display_name: true },
+      orderBy: { display_name: "asc" },
+    }),
   ]);
+
+  const customerMap = new Map(allCustomers.map(c => [c.id, c.name]));
+  const vaMap = new Map(allVas.map(v => [v.id, v.display_name]));
 
   const countByStatus = Object.fromEntries(kpis.map((k) => [k.status, k._count.id]));
   const sumByStatus = Object.fromEntries(
@@ -157,8 +169,12 @@ export default async function TimeTrackingPage({
               entries.map((e) => (
                 <tr key={e.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-gray-500 font-mono text-xs">{e.id}</td>
-                  <td className="px-4 py-3 text-gray-700">{e.customer_id}</td>
-                  <td className="px-4 py-3 text-gray-500">{e.va_id ?? "—"}</td>
+                  <td className="px-4 py-3 text-gray-700">
+                    {customerMap.get(e.customer_id) ?? `#${e.customer_id}`}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {e.va_id != null ? (vaMap.get(e.va_id) ?? `VA #${e.va_id}`) : "—"}
+                  </td>
                   <td className="px-4 py-3 font-medium text-gray-800">
                     {(Number(e.duration_minutes) / 60).toFixed(2)} h
                   </td>
