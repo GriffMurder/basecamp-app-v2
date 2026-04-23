@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users, CheckSquare, Building2,
   BarChart2, Settings, LogOut, Briefcase, Cog, FileText,
   Clock, Shield, UserCircle, DollarSign, ThumbsUp,
-  Activity, AlertTriangle, ShieldAlert, TrendingUp, Smile, ClipboardList, Radio,
+  Activity, AlertTriangle, ShieldAlert, TrendingUp, Smile, ClipboardList, Radio, MessageSquare,
 } from "lucide-react";
 
 const links = [
@@ -36,6 +36,7 @@ const links = [
   { href: "/admin/sentiment", label: "Sentiment", icon: Smile },
   { href: "/admin/intake", label: "Intake Gate", icon: ClipboardList },
   { href: "/admin/noise-budget", label: "Noise Budget", icon: Radio },
+  { href: "/admin/threads", label: "Threads", icon: MessageSquare },
   { href: "/admin", label: "Admin", icon: Settings },
 ];
 

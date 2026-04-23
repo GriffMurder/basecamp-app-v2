@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { KpiCard } from "@/components/ui/kpi-card";
 import {
   Building2, AlertTriangle, Clock, CheckCircle,
-  FileBarChart2, BookOpen, ArrowLeft,
+  FileBarChart2, BookOpen, ArrowLeft, MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -33,7 +33,7 @@ export default async function CustomerDetailPage({
   const customer = await prisma.customer.findUnique({ where: { id: customerId } });
   if (!customer) notFound();
 
-  const [openTodos, carReports, playbook, scoreHistory] = await Promise.all([
+  const [openTodos, carReports, playbook, scoreHistory, recentThreads] = await Promise.all([
     customer.basecamp_project_id
       ? prisma.basecampTodo.findMany({
           where: { basecamp_project_id: customer.basecamp_project_id, completed: false },
@@ -62,6 +62,23 @@ export default async function CustomerDetailPage({
       take: 14,
       select: { id: true, day: true, score_type: true, score_value: true, band: true },
     }),
+    customer.basecamp_project_id
+      ? prisma.basecampThreadActivity.findMany({
+          where: {
+            basecamp_project_id: customer.basecamp_project_id,
+            resolved_at: null,
+          },
+          orderBy: { last_customer_at: "desc" },
+          take: 10,
+          select: {
+            id: true, thread_url: true, assigned_va_name: true,
+            last_customer_at: true, last_tb_reply_at: true,
+            pending_human_followup: true, hygiene_dm_status: true,
+            ops_posted_at_90m: true, last_customer_text: true,
+            basecamp_todo_id: true,
+          },
+        })
+      : Promise.resolve([]),
   ]);
 
   const riskCount = openTodos.filter((t) => t.risk_overdue || t.risk_due_soon).length;
@@ -332,6 +349,88 @@ export default async function CustomerDetailPage({
           </div>
         </div>
       )}
+      {/* Active Threads */}
+      {recentThreads.length > 0 && (
+        <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+          <div className="px-4 py-2.5 border-b bg-gray-50 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <MessageSquare className="w-4 h-4 text-blue-400" />
+              <span className="text-sm font-medium text-gray-700">
+                Active Threads ({recentThreads.length})
+              </span>
+            </div>
+            <Link href="/admin/threads" className="text-xs text-blue-600 hover:underline">
+              View all →
+            </Link>
+          </div>
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                {["Thread", "Assigned VA", "Last Customer Reply", "Wait Time", "Hygiene"].map((h) => (
+                  <th key={h} className="px-3 py-2 text-left text-xs font-semibold text-gray-500">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {recentThreads.map((t) => {
+                const waitMin = t.last_customer_at && !t.last_tb_reply_at
+                  ? Math.floor((Date.now() - new Date(t.last_customer_at).getTime()) / 60000)
+                  : t.last_customer_at && t.last_tb_reply_at && t.last_tb_reply_at > t.last_customer_at
+                  ? null
+                  : null;
+                const overdue = waitMin != null && waitMin >= 30;
+                return (
+                  <tr key={t.id} className={`hover:bg-gray-50 ${t.pending_human_followup ? "bg-amber-50" : ""}`}>
+                    <td className="px-3 py-2.5 max-w-[200px]">
+                      {t.thread_url ? (
+                        <a href={t.thread_url} target="_blank" rel="noopener noreferrer"
+                          className="text-xs text-blue-600 hover:underline truncate block">
+                          {t.basecamp_todo_id ?? "Thread ↗"}
+                        </a>
+                      ) : <span className="text-xs text-gray-400">#{t.id}</span>}
+                      {t.last_customer_text && (
+                        <p className="text-xs text-gray-400 italic truncate max-w-[180px]">
+                          "{t.last_customer_text.slice(0, 50)}{t.last_customer_text.length > 50 ? "…" : ""}"
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 text-xs text-gray-600">
+                      {t.assigned_va_name ?? <span className="text-gray-400 italic">Unassigned</span>}
+                    </td>
+                    <td className="px-3 py-2.5 text-xs text-gray-500">
+                      {t.last_customer_at
+                        ? format(new Date(t.last_customer_at), "MMM d, h:mm a")
+                        : "—"}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {waitMin != null ? (
+                        <span className={`text-xs font-medium ${overdue ? "text-red-600" : "text-amber-600"}`}>
+                          {overdue && <AlertTriangle className="w-3 h-3 inline mr-0.5" />}
+                          {waitMin}m waiting
+                        </span>
+                      ) : t.last_tb_reply_at && t.last_customer_at && t.last_tb_reply_at > t.last_customer_at ? (
+                        <span className="text-xs text-emerald-600 flex items-center gap-0.5">
+                          <CheckCircle className="w-3 h-3" /> Replied
+                        </span>
+                      ) : <span className="text-xs text-gray-400">—</span>}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {t.hygiene_dm_status && t.hygiene_dm_status !== "pending" ? (
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
+                          t.hygiene_dm_status === "completed" ? "bg-emerald-100 text-emerald-700"
+                          : t.hygiene_dm_status === "escalated" ? "bg-red-100 text-red-700"
+                          : "bg-purple-100 text-purple-700"
+                        }`}>{t.hygiene_dm_status}</span>
+                      ) : <span className="text-xs text-gray-300">—</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
     </div>
   );
 }
