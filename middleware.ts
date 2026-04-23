@@ -5,7 +5,7 @@ import type { NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   const session = await auth();
   const { pathname } = request.nextUrl;
-  const publicPaths = ["/login", "/api/auth", "/api/health"];
+  const publicPaths = ["/login", "/api/auth", "/api/health", "/api/admin/bootstrap"];
   if (publicPaths.some((p) => pathname.startsWith(p))) return NextResponse.next();
   if (!session) {
     const loginUrl = new URL("/login", request.url);
