@@ -267,11 +267,26 @@ const JOBS: Job[] = [
     method: "GET",
     category: "cron",
   },
+  {
+    id: "acs-post",
+    label: "ACS Post Reports",
+    description: "Post approved completion reports to Basecamp as formatted HTML comments",
+    endpoint: "/api/cron/acs-post",
+    method: "GET",
+    category: "cron",
+  },
+  {
+    id: "advantage-report-sender",
+    label: "Advantage Report Sender",
+    description: "Send rendered Advantage Reports to clients via Slack channel and VAs via DM",
+    endpoint: "/api/cron/advantage-report-sender",
+    method: "GET",
+    category: "cron",
+  },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {
-  cron: "Scheduled Jobs",
-  inngest: "Inngest Functions",
+  cron: "Scheduled / Cron Jobs",
   admin: "Admin Actions",
 };
 
