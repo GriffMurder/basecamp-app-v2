@@ -5,7 +5,9 @@ import { CheckCircle, XCircle, Loader2, RefreshCw, Clock } from "lucide-react";
 type Entry = {
   id: number;
   customer_id: number;
+  customer_name: string | null;
   va_id: number | null;
+  va_name: string | null;
   bucket_id: number | null;
   duration_minutes: number;
   description: string | null;
@@ -134,10 +136,14 @@ export default function ApprovalsPage() {
                     </span>
                     <span className="text-xs text-gray-400">Entry #{entry.id}</span>
                     {entry.customer_id && (
-                      <span className="text-xs text-gray-400">Customer #{entry.customer_id}</span>
+                      <span className="text-xs text-gray-500 font-medium">
+                        {entry.customer_name ?? `Customer #${entry.customer_id}`}
+                      </span>
                     )}
                     {entry.va_id && (
-                      <span className="text-xs text-gray-400">VA #{entry.va_id}</span>
+                      <span className="text-xs text-gray-400">
+                        {entry.va_name ?? `VA #${entry.va_id}`}
+                      </span>
                     )}
                   </div>
                   {entry.description && (

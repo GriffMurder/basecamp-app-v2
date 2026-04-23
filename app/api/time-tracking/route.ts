@@ -24,7 +24,7 @@ export async function GET(req: Request) {
   if (vaId) where.va_id = parseInt(vaId);
   if (status) where.status = status;
 
-  const [entries, total] = await Promise.all([
+  const [entries, total, allCustomers, allVas] = await Promise.all([
     prisma.timeEntry.findMany({
       where,
       take: pageSize,
@@ -50,9 +50,20 @@ export async function GET(req: Request) {
       },
     }),
     prisma.timeEntry.count({ where }),
+    prisma.customer.findMany({ select: { id: true, name: true } }),
+    prisma.va.findMany({ select: { id: true, display_name: true } }),
   ]);
 
-  return NextResponse.json({ ok: true, entries, total, page, page_size: pageSize });
+  const customerMap = new Map(allCustomers.map((c) => [c.id, c.name]));
+  const vaMap = new Map(allVas.map((v) => [v.id, v.display_name]));
+
+  const enriched = entries.map((e) => ({
+    ...e,
+    customer_name: customerMap.get(e.customer_id) ?? null,
+    va_name: e.va_id != null ? (vaMap.get(e.va_id) ?? null) : null,
+  }));
+
+  return NextResponse.json({ ok: true, entries: enriched, total, page, page_size: pageSize });
 }
 
 const CreateSchema = z.object({

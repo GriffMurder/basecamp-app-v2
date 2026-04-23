@@ -24,12 +24,13 @@ function interventionStatusVariant(status: string): "success" | "warning" | "dan
 export default async function AuditPage({
   searchParams,
 }: {
-  searchParams: { tab?: string; page?: string };
+  searchParams: Promise<{ tab?: string; page?: string }>;
 }) {
   await requireAdmin();
 
-  const tab = (searchParams.tab ?? "interventions") as TabType;
-  const page = Math.max(1, parseInt(searchParams.page ?? "1"));
+  const { tab: rawTab, page: pageStr } = await searchParams;
+  const tab = (rawTab ?? "interventions") as TabType;
+  const page = Math.max(1, parseInt(pageStr ?? "1"));
   const pageSize = 50;
   const skip = (page - 1) * pageSize;
 
@@ -40,6 +41,7 @@ export default async function AuditPage({
     interactions,
     interventions,
     aiTasks,
+    allCustomers,
   ] = await Promise.all([
     prisma.interaction.count(),
     prisma.intervention.count(),
@@ -73,7 +75,10 @@ export default async function AuditPage({
           },
         })
       : Promise.resolve([]),
+    prisma.customer.findMany({ select: { id: true, name: true } }),
   ]);
+
+  const customerMap = new Map(allCustomers.map((c) => [c.id, c.name]));
 
   const totalItems =
     tab === "interactions" ? interactionCount :
@@ -161,7 +166,13 @@ export default async function AuditPage({
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-gray-700 max-w-xs truncate">{i.reason}</td>
-                    <td className="px-4 py-3 text-gray-500">{i.customer_id ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {i.customer_id ? (
+                        <a href={`/customers/${i.customer_id}`} className="hover:underline text-blue-600">
+                          {customerMap.get(i.customer_id) ?? `#${i.customer_id}`}
+                        </a>
+                      ) : "—"}
+                    </td>
                     <td className="px-4 py-3">
                       <Badge variant={interventionStatusVariant(i.status)}>
                         {i.status}
@@ -213,7 +224,13 @@ export default async function AuditPage({
                     <td className="px-4 py-3">
                       <Badge variant="default">{i.interaction_type}</Badge>
                     </td>
-                    <td className="px-4 py-3 text-gray-500">{i.customer_id}</td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {i.customer_id ? (
+                        <a href={`/customers/${i.customer_id}`} className="hover:underline text-blue-600">
+                          {customerMap.get(i.customer_id) ?? `#${i.customer_id}`}
+                        </a>
+                      ) : "—"}
+                    </td>
                     <td className="px-4 py-3 text-gray-400 font-mono text-xs">{i.todo_id ?? "—"}</td>
                     <td className="px-4 py-3 text-gray-400 text-xs">
                       {i.happened_at?.toLocaleString()}

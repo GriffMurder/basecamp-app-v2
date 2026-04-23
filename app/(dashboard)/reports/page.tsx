@@ -18,12 +18,13 @@ function statusVariant(status: string): "success" | "default" | "warning" | "dan
 export default async function ReportsPage({
   searchParams,
 }: {
-  searchParams: { status?: string; q?: string };
+  searchParams: Promise<{ status?: string; q?: string }>;
 }) {
   await requireAuth();
 
-  const filterStatus = searchParams.status ?? "";
-  const q = searchParams.q ?? "";
+  const { status, q: rawQ } = await searchParams;
+  const filterStatus = status ?? "";
+  const q = rawQ ?? "";
 
   const [reports, counts] = await Promise.all([
     prisma.taskCompletionReport.findMany({
