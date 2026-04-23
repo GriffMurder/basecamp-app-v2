@@ -227,6 +227,22 @@ const JOBS: Job[] = [
     method: "GET",
     category: "cron",
   },
+  {
+    id: "quality-scan",
+    label: "Quality Signal Scanner",
+    description: "Scan BTA comments for revision/negative/praise keywords, detect stalls",
+    endpoint: "/api/cron/quality-scan",
+    method: "GET",
+    category: "cron",
+  },
+  {
+    id: "project-activity-sync",
+    label: "Project Activity Sync",
+    description: "Sync Basecamp project-level events (messages, uploads) as Interactions",
+    endpoint: "/api/cron/project-activity-sync",
+    method: "GET",
+    category: "cron",
+  },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {

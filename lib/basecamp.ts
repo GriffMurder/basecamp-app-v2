@@ -217,6 +217,49 @@ export async function reassignTodo(
   return res.json() as Promise<BasecampTodoItem>;
 }
 
+export interface BasecampProjectEvent {
+  id: number;
+  type: string;
+  content: string;
+  excerpt?: string;
+  creator: { id: number; name: string } | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Fetch recent recordings (events) for a Basecamp project.
+ * Uses the /projects/:projectId/recordings.json endpoint (filtered by type=event).
+ * `since` is an ISO-8601 UTC timestamp string to filter events after that time.
+ */
+export async function listProjectEvents(
+  projectId: number,
+  since?: string,
+  token?: string
+): Promise<BasecampProjectEvent[]> {
+  const tok = token ?? (await refreshServiceToken());
+  if (!tok) throw new Error("No Basecamp access token available");
+
+  const all: BasecampProjectEvent[] = [];
+  const types = ["Message", "Document", "Upload", "Comment"];
+
+  for (const type of types) {
+    let page = 1;
+    while (page <= 3) {
+      let path = `/projects/${projectId}/recordings.json?type=${type}&page=${page}`;
+      if (since) path += `&since=${encodeURIComponent(since)}`;
+      const res = await bcFetch(path, tok);
+      if (res.status === 404) break;
+      if (!res.ok) break;
+      const batch = (await res.json()) as BasecampProjectEvent[];
+      all.push(...batch);
+      if (batch.length < 50) break;
+      page++;
+    }
+  }
+  return all;
+}
+
 /** Fetch all active projects (buckets) for the account. */
 export async function getProjects(token?: string): Promise<
   { id: number; name: string; status: string }[]

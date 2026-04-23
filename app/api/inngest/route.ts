@@ -28,6 +28,8 @@ import { tierCompute } from "@/inngest/functions/tier-compute";
 import { systemHeartbeat } from "@/inngest/functions/system-heartbeat";
 import { vaOverloadMonitor } from "@/inngest/functions/va-overload-monitor";
 import { managerEscalation } from "@/inngest/functions/manager-escalation";
+import { qualityScan } from "@/inngest/functions/quality-scan";
+import { projectActivitySync } from "@/inngest/functions/project-activity-sync";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -58,5 +60,7 @@ export const { GET, POST, PUT } = serve({
     systemHeartbeat,
     vaOverloadMonitor,
     managerEscalation,
+    qualityScan,
+    projectActivitySync,
   ],
 });
