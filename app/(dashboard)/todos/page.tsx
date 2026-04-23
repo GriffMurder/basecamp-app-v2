@@ -3,25 +3,30 @@ import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { CheckSquare, Clock, AlertCircle } from "lucide-react";
+import { Suspense } from "react";
+import { TodoSearchBar } from "./todo-search-bar";
 
 export const dynamic = "force-dynamic";
 
 export default async function TodosPage({
   searchParams,
 }: {
-  searchParams: { page?: string; completed?: string; overdue?: string; q?: string };
+  searchParams: Promise<{ page?: string; completed?: string; overdue?: string; q?: string }>;
 }) {
   await requireAuth();
 
-  const page = Math.max(1, parseInt(searchParams.page ?? "1"));
+  const { page: pageStr, completed, overdue, q } = await searchParams;
+  const page = Math.max(1, parseInt(pageStr ?? "1"));
   const pageSize = 50;
-  const showCompleted = searchParams.completed === "1";
-  const overdueOnly = searchParams.overdue === "1";
+  const showCompleted = completed === "1";
+  const overdueOnly = overdue === "1";
+  const searchQuery = q?.trim() ?? "";
   const now = new Date();
 
   const where = {
     ...(showCompleted ? {} : { completed: false }),
     ...(overdueOnly ? { due_on: { lt: now }, completed: false } : {}),
+    ...(searchQuery ? { title: { contains: searchQuery, mode: "insensitive" as const } } : {}),
   };
 
   const [todos, total] = await Promise.all([
@@ -60,19 +65,24 @@ export default async function TodosPage({
   return (
     <div className="max-w-6xl mx-auto space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
           <CheckSquare className="w-6 h-6 text-blue-500" />
           Tasks
         </h1>
-        <span className="text-sm text-gray-500">{total.toLocaleString()} total</span>
+        <div className="flex items-center gap-3">
+          <Suspense>
+            <TodoSearchBar defaultValue={searchQuery} />
+          </Suspense>
+          <span className="text-sm text-gray-500">{total.toLocaleString()} total</span>
+        </div>
       </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
         <Link
           href="/todos"
-          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${!showCompleted && !overdueOnly ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"}`}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${!showCompleted && !overdueOnly && !searchQuery ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"}`}
         >
           Open
         </Link>
@@ -157,13 +167,13 @@ export default async function TodosPage({
           <span>Page {page} of {totalPages}</span>
           <div className="flex gap-2">
             {page > 1 && (
-              <Link href={`/todos?page=${page - 1}${overdueOnly ? "&overdue=1" : ""}${showCompleted ? "&completed=1" : ""}`}
+              <Link href={`/todos?page=${page - 1}${overdueOnly ? "&overdue=1" : ""}${showCompleted ? "&completed=1" : ""}${searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : ""}`}
                 className="px-3 py-1.5 rounded border border-gray-300 hover:bg-gray-50">
                 ← Prev
               </Link>
             )}
             {page < totalPages && (
-              <Link href={`/todos?page=${page + 1}${overdueOnly ? "&overdue=1" : ""}${showCompleted ? "&completed=1" : ""}`}
+              <Link href={`/todos?page=${page + 1}${overdueOnly ? "&overdue=1" : ""}${showCompleted ? "&completed=1" : ""}${searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : ""}`}
                 className="px-3 py-1.5 rounded border border-gray-300 hover:bg-gray-50">
                 Next →
               </Link>

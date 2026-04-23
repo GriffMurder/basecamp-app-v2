@@ -130,7 +130,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Action alerts */}
-      {(kpis.overdueTodos > 0 || kpis.openInterventions > 0 || kpis.pendingApprovals > 0) ? (
+      {(kpis.overdueTodos > 0 || kpis.openInterventions > 0 || kpis.pendingApprovals > 0 || ((role === "owner" || role === "super_admin") && pendingUsers.length > 0)) ? (
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Action Required</p>
           {kpis.overdueTodos > 0 && (
@@ -184,6 +184,19 @@ export default async function DashboardPage() {
                 <p className="text-sm font-semibold text-blue-800">{kpis.pendingApprovals} time entr{kpis.pendingApprovals !== 1 ? "ies" : "y"} pending approval</p>
                 <p className="text-xs text-blue-600">Submitted time entries awaiting review</p>
               </div>
+            </Link>
+          )}
+          {(role === "owner" || role === "super_admin") && pendingUsers.length > 0 && (
+            <Link href="/admin/users" className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 hover:bg-amber-100 transition-colors">
+              <Users className="w-5 h-5 text-amber-500 shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-amber-800">{pendingUsers.length} user{pendingUsers.length !== 1 ? "s" : ""} awaiting role approval</p>
+                <p className="text-xs text-amber-600">
+                  {pendingUsers.slice(0, 2).map(u => u.display_name || u.email).join(", ")}
+                  {pendingUsers.length > 2 ? ` +${pendingUsers.length - 2} more` : ""}
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-amber-400 shrink-0" />
             </Link>
           )}
         </div>

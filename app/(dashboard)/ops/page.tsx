@@ -3,13 +3,15 @@ import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { Cog, AlertTriangle, ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { vaUuid } from "@/lib/uuid5";
 
 export const dynamic = "force-dynamic";
 
 export default async function OpsPage() {
   await requireAuth();
 
-  const [jobStats, vaLoadStates, recentJobs] = await Promise.allSettled([
+  const [jobStats, vaLoadStates, recentJobs, allVas] = await Promise.allSettled([
     Promise.all([
       prisma.jobBoardPost.count(),
       prisma.jobBoardPost.count({ where: { status: "posted" } }),
@@ -31,11 +33,23 @@ export default async function OpsPage() {
         claimed_at: true, assigned_basecamp_person_id: true,
       },
     }),
+
+    prisma.va.findMany({
+      where: { active: true },
+      select: { id: true, display_name: true },
+    }),
   ]);
 
   const jobs = jobStats.status === "fulfilled" ? jobStats.value : { total: 0, open: 0, assigned: 0, expired: 0 };
   const loads = vaLoadStates.status === "fulfilled" ? vaLoadStates.value : [];
   const jobList = recentJobs.status === "fulfilled" ? recentJobs.value : [];
+  const vas = allVas.status === "fulfilled" ? allVas.value : [];
+
+  // Build UUID → {id, display_name} map for VA link resolution
+  const vaByUuid = new Map<string, { id: number; display_name: string }>();
+  for (const va of vas) {
+    vaByUuid.set(vaUuid(va.id), { id: va.id, display_name: va.display_name });
+  }
 
   const hardThrottled = loads.filter(v => v.throttle_level === "hard").length;
   const softThrottled = loads.filter(v => v.throttle_level === "soft").length;
@@ -102,23 +116,39 @@ export default async function OpsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {loads.map((v) => (
-                <tr key={v.va_id} className="hover:bg-gray-50">
-                  <td className="px-4 py-2.5 font-mono text-xs text-gray-600 truncate max-w-[140px]">{v.va_id}</td>
-                  <td className="px-4 py-2.5 text-right font-medium">{v.active_task_count}</td>
-                  <td className="px-4 py-2.5">
-                    <Badge variant={throttleVariant(v.throttle_level)}>{v.throttle_level}</Badge>
-                  </td>
-                  <td className="px-4 py-2.5">
-                    {v.burnout_flag
-                      ? <Badge variant="danger">At risk</Badge>
-                      : <span className="text-gray-400 text-xs">—</span>}
-                  </td>
-                  <td className="px-4 py-2.5 text-gray-500 text-xs">
-                    {v.updated_at.toLocaleString()}
-                  </td>
-                </tr>
-              ))}
+              {loads.map((v) => {
+                const vaInfo = vaByUuid.get(v.va_id);
+                return (
+                  <tr key={v.va_id} className="hover:bg-gray-50">
+                    <td className="px-4 py-2.5">
+                      {vaInfo ? (
+                        <Link
+                          href={`/vas/${vaInfo.id}`}
+                          className="text-sm font-medium text-blue-600 hover:underline"
+                        >
+                          {vaInfo.display_name}
+                        </Link>
+                      ) : (
+                        <span className="font-mono text-xs text-gray-400 truncate block max-w-[140px]" title={v.va_id}>
+                          {v.va_id.slice(0, 8)}…
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-medium">{v.active_task_count}</td>
+                    <td className="px-4 py-2.5">
+                      <Badge variant={throttleVariant(v.throttle_level)}>{v.throttle_level}</Badge>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      {v.burnout_flag
+                        ? <Badge variant="danger">At risk</Badge>
+                        : <span className="text-gray-400 text-xs">—</span>}
+                    </td>
+                    <td className="px-4 py-2.5 text-gray-500 text-xs">
+                      {v.updated_at.toLocaleString()}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
