@@ -6,6 +6,7 @@ import {
   LayoutDashboard, Users, CheckSquare, Building2,
   BarChart2, Settings, LogOut, Briefcase, Cog, FileText,
   Clock, Shield, UserCircle, DollarSign, ThumbsUp,
+  Activity, AlertTriangle,
 } from "lucide-react";
 
 const links = [
@@ -13,9 +14,12 @@ const links = [
   { href: "/todos", label: "Tasks", icon: CheckSquare },
   { href: "/customers", label: "Clients", icon: Building2 },
   { href: "/vas", label: "Team", icon: Users },
+  { href: "/vas/health", label: "Team Health", icon: Activity },
+  { href: "/vas/scorecards", label: "Scorecards", icon: FileText },
   { href: "/ops", label: "Operations", icon: Cog },
   { href: "/buckets", label: "Buckets", icon: DollarSign },
   { href: "/approvals", label: "Approvals", icon: ThumbsUp },
+  { href: "/quality", label: "Quality Signals", icon: AlertTriangle },
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/time-tracking", label: "Time Tracking", icon: Clock },
   { href: "/insights", label: "Insights", icon: BarChart2 },
