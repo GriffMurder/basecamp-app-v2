@@ -5,10 +5,11 @@ import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { authConfig } from "./auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
   providers: [
     Credentials({
       name: "Password",
@@ -41,18 +42,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       ? [Google({ clientId: process.env.AUTH_GOOGLE_ID, clientSecret: process.env.AUTH_GOOGLE_SECRET! })]
       : []),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) { token.id = user.id; token.role = (user as { role?: string }).role; }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user && token) {
-        session.user.id = token.id as string;
-        (session.user as { role?: string }).role = token.role as string;
-      }
-      return session;
-    },
-  },
-  pages: { signIn: "/login", verifyRequest: "/login/verify" },
 });
