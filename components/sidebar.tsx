@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
 import {
   LayoutDashboard, Users, CheckSquare, Building2,
   BarChart2, Settings, LogOut, Briefcase, Cog, FileText,
   Clock, Shield, UserCircle, DollarSign, ThumbsUp,
-  Activity, AlertTriangle, ShieldAlert, TrendingUp, Smile, ClipboardList,
+  Activity, AlertTriangle, ShieldAlert, TrendingUp, Smile, ClipboardList, Radio,
 } from "lucide-react";
 
 const links = [
@@ -34,11 +35,21 @@ const links = [
   { href: "/admin/advantage-reports", label: "Advantage Reports", icon: TrendingUp },
   { href: "/admin/sentiment", label: "Sentiment", icon: Smile },
   { href: "/admin/intake", label: "Intake Gate", icon: ClipboardList },
+  { href: "/admin/noise-budget", label: "Noise Budget", icon: Radio },
   { href: "/admin", label: "Admin", icon: Settings },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [draftCount, setDraftCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/advantage-reports/draft-count")
+      .then((r) => r.json())
+      .then((d) => setDraftCount(d.count ?? 0))
+      .catch(() => {});
+  }, [pathname]);
+
   return (
     <aside className="flex flex-col w-56 min-h-screen bg-gray-900 text-gray-100 shrink-0">
       <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-700">
@@ -48,6 +59,7 @@ export function Sidebar() {
       <nav className="flex-1 py-4 space-y-0.5 px-2">
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
+          const isAdvantage = href === "/admin/advantage-reports";
           return (
             <Link
               key={href}
@@ -60,7 +72,12 @@ export function Sidebar() {
               )}
             >
               <Icon className="w-4 h-4 shrink-0" />
-              {label}
+              <span className="flex-1">{label}</span>
+              {isAdvantage && draftCount != null && draftCount > 0 && (
+                <span className="ml-auto text-xs font-bold bg-amber-500 text-white rounded-full px-1.5 py-0.5 leading-none">
+                  {draftCount}
+                </span>
+              )}
             </Link>
           );
         })}

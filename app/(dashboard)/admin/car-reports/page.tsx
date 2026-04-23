@@ -108,7 +108,9 @@ export default async function CarReportsPage() {
                   return (
                     <tr key={r.id} className="hover:bg-gray-50">
                       <td className="px-3 py-2.5 font-medium text-gray-900 max-w-[160px] truncate">
-                        {r.customer.name}
+                        <Link href={`/admin/car-reports/${r.id}`} className="hover:text-blue-600">
+                          {r.customer.name}
+                        </Link>
                       </td>
                       <td className="px-3 py-2.5">
                         {r.customer.effective_tier ? (
