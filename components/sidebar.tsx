@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import {
   LayoutDashboard, Users, CheckSquare, Building2,
-  BarChart2, Settings, LogOut, Briefcase,
+  BarChart2, Settings, LogOut, Briefcase, Cog, FileText,
 } from "lucide-react";
 
 const links = [
@@ -12,6 +12,8 @@ const links = [
   { href: "/todos", label: "Tasks", icon: CheckSquare },
   { href: "/customers", label: "Clients", icon: Building2 },
   { href: "/vas", label: "Team", icon: Users },
+  { href: "/ops", label: "Operations", icon: Cog },
+  { href: "/reports", label: "Reports", icon: FileText },
   { href: "/insights", label: "Insights", icon: BarChart2 },
   { href: "/admin", label: "Admin", icon: Settings },
 ];
@@ -45,13 +47,15 @@ export function Sidebar() {
         })}
       </nav>
       <div className="px-2 pb-4">
-        <Link
-          href="/api/auth/signout"
-          className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors w-full"
-        >
-          <LogOut className="w-4 h-4 shrink-0" />
-          Sign out
-        </Link>
+        <form action="/api/auth/signout" method="POST">
+          <button
+            type="submit"
+            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors w-full"
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            Sign out
+          </button>
+        </form>
       </div>
     </aside>
   );

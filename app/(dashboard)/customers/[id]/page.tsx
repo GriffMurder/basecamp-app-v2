@@ -11,10 +11,11 @@ export const dynamic = "force-dynamic";
 export default async function CustomerDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   await requireAuth();
-  const id = parseInt(params.id);
+  const { id: rawId } = await params;
+  const id = parseInt(rawId, 10);
   if (isNaN(id)) notFound();
 
   const customer = await prisma.customer.findUnique({
