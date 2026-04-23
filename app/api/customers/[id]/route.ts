@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export const runtime = "nodejs";
+
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   await requireAuth();
-  const id = parseInt(params.id);
+  const { id: rawId } = await params;
+  const id = parseInt(rawId);
   if (isNaN(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   const customer = await prisma.customer.findUnique({ where: { id } });
   if (!customer) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -22,9 +25,10 @@ const patchSchema = z.object({
   clockify_client_id: z.string().optional(),
 });
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   await requireAuth();
-  const id = parseInt(params.id);
+  const { id: rawId } = await params;
+  const id = parseInt(rawId);
   if (isNaN(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const body = await req.json() as unknown;
@@ -35,13 +39,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   return NextResponse.json({ ok: true, customer });
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
   await requireRole(["super_admin", "owner"]);
-  const id = parseInt(params.id);
+  const { id: rawId } = await params;
+  const id = parseInt(rawId);
   if (isNaN(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
-  // Soft-delete only
   await prisma.customer.update({ where: { id }, data: { active: false } });
   return NextResponse.json({ ok: true });
 }
-
-import { requireRole } from "@/lib/auth";

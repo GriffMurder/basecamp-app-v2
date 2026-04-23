@@ -3,6 +3,8 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
+export const runtime = "nodejs";
+
 const patchSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
@@ -13,18 +15,20 @@ const patchSchema = z.object({
   workflow_state: z.string().optional(),
 });
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   await requireAuth();
-  const id = parseInt(params.id);
+  const { id: rawId } = await params;
+  const id = parseInt(rawId);
   if (isNaN(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   const todo = await prisma.basecampTodo.findUnique({ where: { id } });
   if (!todo) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ ok: true, todo });
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   await requireAuth();
-  const id = parseInt(params.id);
+  const { id: rawId } = await params;
+  const id = parseInt(rawId);
   if (isNaN(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const body = await req.json() as unknown;
@@ -43,9 +47,10 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   return NextResponse.json({ ok: true, todo });
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
   await requireAuth();
-  const id = parseInt(params.id);
+  const { id: rawId } = await params;
+  const id = parseInt(rawId);
   if (isNaN(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   await prisma.basecampTodo.delete({ where: { id } });
   return NextResponse.json({ ok: true });
