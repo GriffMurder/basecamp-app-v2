@@ -5,7 +5,7 @@ export const authConfig = {
   session: { strategy: "jwt" },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
-      const publicPaths = ["/login", "/api/auth", "/api/health", "/api/admin/bootstrap", "/api/inngest", "/api/cron", "/api/webhooks"];
+      const publicPaths = ["/login", "/api/auth", "/api/health", "/api/admin/bootstrap", "/api/admin/stats", "/api/inngest", "/api/cron", "/api/webhooks"];
       if (publicPaths.some((p) => nextUrl.pathname.startsWith(p))) return true;
       if (auth?.user) return true;
       const loginUrl = new URL("/login", nextUrl.origin);
